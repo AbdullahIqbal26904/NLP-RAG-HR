@@ -1,14 +1,3 @@
----
-title: VenD RAG Talent Matching
-emoji: 🎯
-colorFrom: blue
-colorTo: cyan
-sdk: streamlit
-sdk_version: 1.35.0
-app_file: app.py
-pinned: false
----
-
 ## Docker Run
 
 Build and start the app:

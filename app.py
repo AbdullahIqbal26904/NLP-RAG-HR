@@ -1,4 +1,4 @@
-"""Streamlit UI - VenD RAG Talent Matching. Deployed on HuggingFace Spaces."""
+"""Streamlit UI - RAG Talent Matching. Deployed on HuggingFace Spaces."""
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
@@ -11,7 +11,7 @@ from pipeline.generation import (
 
 load_dotenv()
 
-st.set_page_config(page_title="VenD RAG", page_icon="🎯", layout="wide")
+st.set_page_config(page_title="HR RAG", page_icon="", layout="wide")
 
 
 @st.cache_resource
