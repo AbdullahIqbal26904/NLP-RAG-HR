@@ -1,0 +1,15 @@
+.git
+.gitignore
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+.vscode/
+
+# Keep only exported JSONs from data for container context
+data/*
+!data/candidates.json
+!data/jobs.json
