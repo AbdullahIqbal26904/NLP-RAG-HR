@@ -1,0 +1,6 @@
+Strategy,Faithfulness,Relevancy,Avg Retrieval Time (s),Avg Total Time (s)
+Semantic only,0.3333,0.0446,0.316,5.096
+Hybrid + RRF,0.5000,0.0446,0.260,4.854
+Hybrid + RRF + CE,0.1667,0.3587,0.977,7.613
+Chunking: Fixed (Hybrid + RRF + CE),0.7500,0.0291,0.675,8.162
+Chunking: Recursive (Hybrid + RRF + CE),0.2500,0.2196,0.691,8.903

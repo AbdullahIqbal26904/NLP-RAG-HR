@@ -1,32 +1,66 @@
-## Docker Run
+# RAG Talent Matching Project
 
-Build and start the app:
+## Confidentiality Notice
+This dataset was provided by VentureDive for our Final Year Project. We have signed an MOU and cannot share the raw dataset publicly.
+
+## 1. Start the Application (Docker)
+
+Build and run:
 
 ```bash
 docker compose build
 docker compose up -d
 ```
 
-Open the app:
+Open the app at:
 
 ```text
 http://localhost:8501
 ```
 
-Check logs:
+Health check:
 
 ```bash
-docker compose logs -f app
+curl http://localhost:8501/_stcore/health
 ```
 
-Stop the app:
+Stop:
 
 ```bash
 docker compose down
 ```
 
-Optional ingestion run (requires valid API keys in .env):
+## 2. Ingest Data to Pinecone
 
 ```bash
-docker compose run --rm app python -m pipeline.ingest
+docker compose exec -T app python -m pipeline.ingest
+```
+
+## 3. Run Automated Evaluation + Ablation
+
+```bash
+docker compose exec -T app python -m pipeline.experiments
+```
+
+Outputs:
+- reports/experiment_results.json
+- reports/ablation_summary.csv
+
+## 4. Generate Submission Report
+
+```bash
+docker compose exec -T app python -m pipeline.report_builder
+```
+
+Output:
+- reports/submission_report.md
+
+## 5. Optional Local (non-Docker)
+
+```bash
+source .venv/bin/activate
+python -m pipeline.ingest
+python -m pipeline.experiments
+python -m pipeline.report_builder
+streamlit run app.py
 ```

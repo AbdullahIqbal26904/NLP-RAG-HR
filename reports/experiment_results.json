@@ -1,0 +1,1003 @@
+{
+  "run_at": "2026-03-30T13:53:36Z",
+  "config": {
+    "hf_model_id": "meta-llama/Llama-3.1-8B-Instruct",
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "top_k_retrieve": 20,
+    "top_k_rerank": 5,
+    "baseline_queries": 10,
+    "retrieval_ablation_queries": 3,
+    "chunking_ablation_queries": 2,
+    "gen_max_tokens": 180,
+    "eval_max_claims": 2
+  },
+  "baseline_fixed_set": {
+    "summary": {
+      "count": 15,
+      "avg_faithfulness": 0.36666666666666664,
+      "avg_relevancy": 0.2707836073719793,
+      "avg_retrieval_s": 1.1679987004002517,
+      "avg_generation_s": 1.3925702728670635,
+      "avg_evaluation_s": 5.112656060799297,
+      "avg_total_s": 7.673225034066612
+    },
+    "rows": [
+      {
+        "query": "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.36751407384872437,
+        "retrieval_s": 1.9128438339976128,
+        "generation_s": 2.2996611680027854,
+        "evaluation_s": 6.271663502997399,
+        "total_s": 10.484168504997797,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the Python backend developer position with FastAPI and PostgreSQL are:\n\n1. **Candidate 2: Umair Qasim**\nUmair Qasim matches the requirement because:\n- He has 4 years of experience as a Full Stack Python Developer.\n- He has listed Python as his primary skill.\n- He has experience working with PostgreSQL, which is a requirement.\n- Although he has more experience with Django, he has also worked with FastAPI is not explicitly mentioned but his experience with multiple frameworks suggests he can adapt to new ones.\n\n2. **Candidate 5: Muhammad Talha**\nMuhammad Talha matches the requirement because:\n- He has listed Python as his primary skill.\n- He has experience working with PostgreSQL, which is a requirement.\n- He has experience with FastAPI is not explicitly mentioned but his experience with multiple",
+        "claims": [
+          "He has 4 years of experience as a Full Stack Python Developer.",
+          "He has listed Python as his primary skill.",
+          "He has experience working with PostgreSQL, which is a requirement.",
+          "Although he has more experience with Django, he has also worked with FastAPI is not explicitly mentioned but his experience with multiple frameworks suggests he can adapt to new ones.",
+          "He has listed Python as his primary skill.",
+          "He has experience working with PostgreSQL, which is a requirement.",
+          "He has experience with FastAPI is not explicitly mentioned but his experience with multiple frameworks suggests he can adapt to new ones."
+        ],
+        "verified_claims": [
+          {
+            "claim": "He has 4 years of experience as a Full Stack Python Developer.",
+            "supported": false,
+            "reason": "The context does not mention Syed Muhammad Ali as a Full Stack Python Developer, but rather Umair Qasim is mentioned with that role."
+          },
+          {
+            "claim": "He has listed Python as his primary skill.",
+            "supported": false,
+            "reason": "The claim is not supported because Syed Muhammad Ali has listed multiple skills as primary, including Python, but it does not explicitly state that Python is his primary skill."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the Python backend developer position with FastAPI and PostgreSQL?",
+          "Can you explain why Umair Qasim is a good fit for the position?",
+          "How does Muhammad Talha's experience align with the job requirements?"
+        ],
+        "similarity_scores": [
+          0.8241838216781616,
+          0.07417681813240051,
+          0.20418158173561096
+        ]
+      },
+      {
+        "query": "Need a React frontend developer with TypeScript experience",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 1.0,
+        "relevancy": 0.3563762406508128,
+        "retrieval_s": 1.4563470839966612,
+        "generation_s": 1.7599885420022474,
+        "evaluation_s": 5.724344628000836,
+        "total_s": 8.940680253999744,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the React frontend developer with TypeScript experience are:\n\n1. **Candidate 1: Shakeel Mazhar**\nShakeel has 4 years of experience as a React Native developer, but his profile also mentions that he has experience with React.js and TypeScript. He has worked on optimizing code, making it reusable, and fixing type annotations of TypeScript across a project. This suggests that he has hands-on experience with TypeScript and can apply it to a React frontend development role.\n\n2. **Candidate 2: Sufian Babri**\nSufian has 6 years of experience as a mobile application developer, with expertise in React Native and React.js. His profile explicitly mentions TypeScript as one of his skills, and he has experience with automated testing, Jest, and React Hooks. This makes him a strong candidate for the role.\n\n3",
+        "claims": [
+          "Shakeel has 4 years of experience as a React Native developer",
+          "Shakeel has experience with React.js and TypeScript",
+          "Shakeel has worked on optimizing code, making it reusable, and fixing type annotations of TypeScript across a project",
+          "Sufian has 6 years of experience as a mobile application developer",
+          "Sufian has expertise in React Native and React.js",
+          "Sufian's profile explicitly mentions TypeScript as one of his skills",
+          "Sufian has experience with automated testing, Jest, and React Hooks"
+        ],
+        "verified_claims": [
+          {
+            "claim": "Shakeel has 4 years of experience as a React Native developer",
+            "supported": true,
+            "reason": "The claim is supported by the 'Experience' section of Shakeel's profile."
+          },
+          {
+            "claim": "Shakeel has experience with React.js and TypeScript",
+            "supported": true,
+            "reason": "Shakeel's skills include React.js and TypeScript, and his work experience mentions fixing TypeScript type annotations."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the React frontend developer with TypeScript experience?",
+          "Can you provide a detailed analysis of the candidate profiles?",
+          "Who are the top candidates based on their experience and skills?"
+        ],
+        "similarity_scores": [
+          0.8034121990203857,
+          0.1005544364452362,
+          0.1651620864868164
+        ]
+      },
+      {
+        "query": "Seeking a DevOps engineer with Docker and Kubernetes skills",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.6338227192560831,
+        "retrieval_s": 0.7150744999999006,
+        "generation_s": 1.5581655839996529,
+        "evaluation_s": 6.417278044998966,
+        "total_s": 8.69051812899852,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the DevOps engineer position with Docker and Kubernetes skills are:\n\n1. **Candidate 1: M. Zakaria Nazir**\nM. Zakaria Nazir matches the requirement due to his extensive experience with Docker, Kubernetes, and AWS Cloud. His primary skills include Docker, Kubernetes, and AWS Cloud, which aligns with the job requirement. He has also worked with AWS Lambda, EKS, ECS, ECR, and CI/CD, which are relevant to the position.\n\n2. **Candidate 2: Usman Ali Khan**\nUsman Ali Khan matches the requirement due to his primary skills in Docker, Kubernetes, and AWS. Although his profile is more extensive, his experience with Docker, Kubernetes, and AWS aligns with the job requirement. However, his skills in Google Cloud Platform (GCP) and Azure",
+        "claims": [
+          "M. Zakaria Nazir matches the requirement due to his extensive experience with Docker, Kubernetes, and AWS Cloud.",
+          "His primary skills include Docker, Kubernetes, and AWS Cloud, which aligns with the job requirement.",
+          "He has also worked with AWS Lambda, EKS, ECS, ECR, and CI/CD, which are relevant to the position.",
+          "Usman Ali Khan matches the requirement due to his primary skills in Docker, Kubernetes, and AWS.",
+          "Although his profile is more extensive, his experience with Docker, Kubernetes, and AWS aligns with the job requirement.",
+          "His skills in Google Cloud Platform (GCP) and Azure"
+        ],
+        "verified_claims": [
+          {
+            "claim": "M. Zakaria Nazir matches the requirement due to his extensive experience with Docker, Kubernetes, and AWS Cloud.",
+            "supported": false,
+            "reason": "The context does not mention any experience with Kubernetes, AWS Cloud, or Docker."
+          },
+          {
+            "claim": "His primary skills include Docker, Kubernetes, and AWS Cloud, which aligns with the job requirement.",
+            "supported": false,
+            "reason": "The claim is not supported because the provided context does not mention Docker, Kubernetes, and AWS Cloud as the primary skills of M. Zakaria Nazir."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the DevOps engineer position?",
+          "Can you provide a list of candidates with Docker and Kubernetes skills?",
+          "Who are the candidates that match the job requirement for the DevOps engineer position?"
+        ],
+        "similarity_scores": [
+          0.5670516490936279,
+          0.7408550977706909,
+          0.5935614109039307
+        ]
+      },
+      {
+        "query": "Looking for a data scientist with machine learning and Python expertise",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.21057038257519403,
+        "retrieval_s": 1.278538499998831,
+        "generation_s": 1.1750781260016083,
+        "evaluation_s": 5.595175918999303,
+        "total_s": 8.048792544999742,
+        "answer": "**Top 3 Matching Candidates:**\n\n1. **Abdul Bari Malik**\n2. **Sarfaraz Ahmed Abbasi**\n3. **Muhammad Saeed Usmani**\n\n**Why each matches the requirement:**\n\n1. **Abdul Bari Malik**:\n\t* Has 5 years of experience as a Senior Data Scientist.\n\t* Has expertise in Python, Machine Learning, and SQL, which are the primary requirements.\n\t* Has experience in developing and deploying end-to-end automated data pipelines, which aligns with the requirement.\n2. **Sarfaraz Ahmed Abbasi**:\n\t* Has 2 years of experience as a Senior Data Scientist.\n\t* Has expertise in Machine Learning, Python, and SQL, which are the primary requirements.\n\t* Has experience in developing machine learning models and solutions, which aligns with the requirement.\n3.",
+        "claims": [
+          "Has 5 years of experience as a Senior Data Scientist.",
+          "Has expertise in Python, Machine Learning, and SQL, which are the primary requirements.",
+          "Has experience in developing and deploying end-to-end automated data pipelines, which aligns with the requirement.",
+          "Has 2 years of experience as a Senior Data Scientist.",
+          "Has expertise in Machine Learning, Python, and SQL, which are the primary requirements.",
+          "Has experience in developing machine learning models and solutions, which aligns with the requirement."
+        ],
+        "verified_claims": [
+          {
+            "claim": "Has 5 years of experience as a Senior Data Scientist.",
+            "supported": false,
+            "reason": "The context does not support the claim as the experience of Abdul Bari Malik is 5 years, but it is his experience, not Sarfaraz Ahmed Abbasi's."
+          },
+          {
+            "claim": "Has expertise in Python, Machine Learning, and SQL, which are the primary requirements.",
+            "supported": false,
+            "reason": "The context does not mention expertise in Python, Machine Learning, and SQL as primary requirements, but rather lists them as skills."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the Senior Data Scientist position?",
+          "Why were Abdul Bari Malik and Sarfaraz Ahmed Abbasi selected as top candidates?",
+          "What are the key qualifications of the top 3 matching candidates?"
+        ],
+        "similarity_scores": [
+          0.4102700650691986,
+          0.06552665680646896,
+          0.15591442584991455
+        ]
+      },
+      {
+        "query": "Need a full stack developer with Node.js and React, 2+ years",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 1.0,
+        "relevancy": 0.6058527727921804,
+        "retrieval_s": 1.3583445420008502,
+        "generation_s": 1.5806509590001951,
+        "evaluation_s": 5.069937668999046,
+        "total_s": 8.008933170000091,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the full stack developer position with Node.js and React requirements are:\n\n1. **Muhammad Syed Iftikhar**\n   - Matches the requirement: 3 years of experience, Node.js, and React skills.\n   - Reason: Muhammad Syed Iftikhar has 3 years of experience as a Full Stack Developer, which meets the requirement. He also has skills in Node.js and React, making him a strong candidate.\n\n2. **Nabeel Hayat**\n   - Matches the requirement: 6 years of experience, Node.js, and React skills.\n   - Reason: Nabeel Hayat has 6 years of experience as a Full Stack and iOS Developer, which exceeds the requirement. He also has primary skills in Node.js and React, making him a suitable candidate.\n\n3. **Muhammad",
+        "claims": [
+          "Muhammad Syed Iftikhar has 3 years of experience as a Full Stack Developer",
+          "Muhammad Syed Iftikhar has skills in Node.js and React",
+          "Nabeel Hayat has 6 years of experience as a Full Stack and iOS Developer",
+          "Nabeel Hayat has primary skills in Node.js and React"
+        ],
+        "verified_claims": [
+          {
+            "claim": "Muhammad Syed Iftikhar has 3 years of experience as a Full Stack Developer",
+            "supported": true,
+            "reason": "The claim is supported by the 'Experience' section of the context which explicitly states 3 years of experience as a Full Stack Developer."
+          },
+          {
+            "claim": "Muhammad Syed Iftikhar has skills in Node.js and React",
+            "supported": true,
+            "reason": "Node Js is listed as one of his skills."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the full stack developer position?",
+          "Can you provide a list of suitable candidates for the Node.js and React requirements?",
+          "Who are the top candidates for the full stack developer position with Node.js and React skills?"
+        ],
+        "similarity_scores": [
+          0.40890899300575256,
+          0.6415494680404663,
+          0.7670998573303223
+        ]
+      },
+      {
+        "query": "Seeking a mobile developer with Flutter or React Native",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.19598453616102537,
+        "retrieval_s": 0.7618006250013423,
+        "generation_s": 1.9700920430004771,
+        "evaluation_s": 5.3669444609986385,
+        "total_s": 8.098837129000458,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the mobile developer position with Flutter or React Native skills are:\n\n1. **Candidate 3: Hannan Arif**\n   - **Why it matches the requirement:** Hannan has Flutter as his primary skill, which directly matches the requirement. Although he has other primary skills like Android Native and iOS Native, his proficiency in Flutter makes him a strong candidate.\n   - **Skill gaps:** None mentioned in the profile.\n\n2. **Candidate 1: Shakeel Mazhar**\n   - **Why it matches the requirement:** Shakeel has React Native as his primary skill, which matches the requirement. His experience as a React Native Developer at Awanoo also aligns with the job requirement.\n   - **Skill gaps:** None mentioned in the profile.\n\n3. **Candidate 2: Sufian Babri**\n   - **",
+        "claims": [
+          "Hannan has Flutter as his primary skill",
+          "Hannan has other primary skills like Android Native and iOS Native",
+          "Shakeel has React Native as his primary skill",
+          "Shakeel has experience as a React Native Developer at Awanoo",
+          "No skill gaps are mentioned in Hannan's profile",
+          "No skill gaps are mentioned in Shakeel's profile"
+        ],
+        "verified_claims": [
+          {
+            "claim": "Hannan has Flutter as his primary skill",
+            "supported": false,
+            "reason": "There is no mention of Flutter in the context."
+          },
+          {
+            "claim": "Hannan has other primary skills like Android Native and iOS Native",
+            "supported": false,
+            "reason": "There is no information about Hannan's skills in the context."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the mobile developer position?",
+          "Can you explain why Hannan Arif is a strong candidate?",
+          "What are the skill gaps for each of the top 3 candidates?"
+        ],
+        "similarity_scores": [
+          0.46657752990722656,
+          0.06136210635304451,
+          0.06001397222280502
+        ]
+      },
+      {
+        "query": "Looking for a project manager with Agile and Scrum certification",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 1.0,
+        "relevancy": 0.21123983462651572,
+        "retrieval_s": 1.1014533340021444,
+        "generation_s": 1.1823653760002344,
+        "evaluation_s": 5.202228709997144,
+        "total_s": 7.486047419999522,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the project manager position with Agile and Scrum certification are:\n\n1. **Candidate 1: Owais Mabood**\nOwais Mabood has a strong background in Agile project management, with 5 years of experience as a Scrum Master and QA Engineer. He holds an MS in Project Management, which aligns with the job requirement. His primary skills include Agile Project Management, Scrum Master, and Program Management, making him a strong fit for the position.\n\n2. **Candidate 3: Rashid Malik**\nRashid Malik has 6 years of experience as a Technical Project Manager, with skills in Agile, Scrum, and project management. Although his industry is not specified, his experience and skills match the job requirement. He has hands-on experience with Agile methodologies and has contributed to project-focused tasks",
+        "claims": [
+          "Owais Mabood has a strong background in Agile project management, with 5 years of experience as a Scrum Master and QA Engineer.",
+          "He holds an MS in Project Management, which aligns with the job requirement.",
+          "His primary skills include Agile Project Management, Scrum Master, and Program Management, making him a strong fit for the position.",
+          "Rashid Malik has 6 years of experience as a Technical Project Manager, with skills in Agile, Scrum, and project management.",
+          "He has hands-on experience with Agile methodologies and has contributed to project-focused tasks"
+        ],
+        "verified_claims": [
+          {
+            "claim": "Owais Mabood has a strong background in Agile project management, with 5 years of experience as a Scrum Master and QA Engineer.",
+            "supported": true,
+            "reason": "Lexical overlap found between claim and context."
+          },
+          {
+            "claim": "He holds an MS in Project Management, which aligns with the job requirement.",
+            "supported": true,
+            "reason": "Lexical overlap found between claim and context."
+          }
+        ],
+        "generated_questions": [
+          "What are the main points about Based provided candidate?",
+          "Which skills or qualifications are emphasized in Based provided candidate?",
+          "What gaps or next steps are suggested in Based provided candidate?"
+        ],
+        "similarity_scores": [
+          0.1490626335144043,
+          0.28126847743988037,
+          0.20338839292526245
+        ]
+      },
+      {
+        "query": "Need a cloud architect with AWS or Azure, 5+ years",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.5,
+        "relevancy": 0.0748323251803716,
+        "retrieval_s": 1.0260089180010254,
+        "generation_s": 0.912578499999654,
+        "evaluation_s": 4.182104626997898,
+        "total_s": 6.120692044998577,
+        "answer": "Top matching candidates (fallback mode):\n1. Candidate 1: Moazam Ali Tariq: Name: Moazam Ali Tariq | Role: DEVOPS / CLOUD/SYSTEMS Professional | Experience: 2 years Industry: Cloud | Location: Doha, Qatar\n2. Candidate 2: Abubakr Arshad: Name: Abubakr Arshad | Role: CLOUD AND IT ENGINEER | Experience: 4 years Industry: Cloud and IT | Location: Not specified\n3. Candidate 3: Ali Abid: Name: Ali Abid | Role: Cloud Engineer | Experience: 5 years Industry: Cloud | Location: Not specified\nSkill gaps: Review the retrieved context for missing technologies and domain depth.\nNote: External LLM endpoint was unavailable; this response is generated from retrieved context.",
+        "claims": [
+          "Top matching candidates (fallback mode):\n1.",
+          "Candidate 1: Moazam Ali Tariq: Name: Moazam Ali Tariq | Role: DEVOPS / CLOUD/SYSTEMS Professional | Experience: 2 years Industry: Cloud | Location: Doha, Qatar\n2."
+        ],
+        "verified_claims": [
+          {
+            "claim": "Top matching candidates (fallback mode):\n1.",
+            "supported": false,
+            "reason": "Insufficient lexical overlap between claim and context."
+          },
+          {
+            "claim": "Candidate 1: Moazam Ali Tariq: Name: Moazam Ali Tariq | Role: DEVOPS / CLOUD/SYSTEMS Professional | Experience: 2 years Industry: Cloud | Location: Doha, Qatar\n2.",
+            "supported": true,
+            "reason": "Lexical overlap found between claim and context."
+          }
+        ],
+        "generated_questions": [
+          "What are the main points about matching candidates fallback?",
+          "Which skills or qualifications are emphasized in matching candidates fallback?",
+          "What gaps or next steps are suggested in matching candidates fallback?"
+        ],
+        "similarity_scores": [
+          0.024221226572990417,
+          0.08854866027832031,
+          0.11172708868980408
+        ]
+      },
+      {
+        "query": "Seeking a UI/UX designer with Figma and user research skills",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.5,
+        "relevancy": 0.04138216438392798,
+        "retrieval_s": 0.7091497500005062,
+        "generation_s": 1.0874884590011789,
+        "evaluation_s": 4.039725627000735,
+        "total_s": 5.83636383600242,
+        "answer": "Top matching candidates (fallback mode):\n1. Candidate 1: Abdul Razzaq: Name: Abdul Razzaq | Role: UX Developer | Experience: 4 years Industry: Software Development | Location: Lahore, Pakistan\n2. Candidate 2: Huzaifa Shabbir: Name: Huzaifa Shabbir | Role: Senior User Experience Designer | Experience: 3 years Industry: Not specified | Location: Not specified\n3. Candidate 3: Hassaan Abuzar: Name: Hassaan Abuzar | Role: Lead UI/UX Designer | Experience: 5 years Industry: Design | Location: Lahore, Pakistan\nSkill gaps: Review the retrieved context for missing technologies and domain depth.\nNote: External LLM endpoint was unavailable; this response is generated from retrieved context.",
+        "claims": [
+          "Top matching candidates (fallback mode):\n1.",
+          "Candidate 1: Abdul Razzaq: Name: Abdul Razzaq | Role: UX Developer | Experience: 4 years Industry: Software Development | Location: Lahore, Pakistan\n2."
+        ],
+        "verified_claims": [
+          {
+            "claim": "Top matching candidates (fallback mode):\n1.",
+            "supported": false,
+            "reason": "Insufficient lexical overlap between claim and context."
+          },
+          {
+            "claim": "Candidate 1: Abdul Razzaq: Name: Abdul Razzaq | Role: UX Developer | Experience: 4 years Industry: Software Development | Location: Lahore, Pakistan\n2.",
+            "supported": true,
+            "reason": "Lexical overlap found between claim and context."
+          }
+        ],
+        "generated_questions": [
+          "What are the main points about matching candidates fallback?",
+          "Which skills or qualifications are emphasized in matching candidates fallback?",
+          "What gaps or next steps are suggested in matching candidates fallback?"
+        ],
+        "similarity_scores": [
+          -0.021148286759853363,
+          0.11645093560218811,
+          0.028843844309449196
+        ]
+      },
+      {
+        "query": "Looking for a cybersecurity analyst with penetration testing experience",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.5,
+        "relevancy": 0.1202482928832372,
+        "retrieval_s": 0.6518959579989314,
+        "generation_s": 1.067322751001484,
+        "evaluation_s": 4.946397751999029,
+        "total_s": 6.665616460999445,
+        "answer": "Top matching candidates (fallback mode):\n1. Candidate 1: Zubair ul Amin: Name: Zubair ul Amin | Role: Test Automation Engineer | Experience: 2 years Industry: Software Testing and Automation | Location: Lahore, Pakistan\n2. Candidate 2: Sarfaraz Ahmed Abbasi: Name: Sarfaraz Ahmed Abbasi | Role: Senior Data Scientist | Quantitative Analyst | Senior Machine Learning Engineer | Experience: 2 years Industry: Data Science | Location: Not specified\n3. Candidate 3:: Name: Aqsa Bint e Idris | Role: Data Analyst | Experience: 6 years Industry: Data Engineering | Location: Not specified\nSkill gaps: Review the retrieved context for missing technologies and domain depth.\nNote: External LLM endpoint was unavailable; this response is generated from retrieved context.",
+        "claims": [
+          "Top matching candidates (fallback mode):\n1.",
+          "Candidate 1: Zubair ul Amin: Name: Zubair ul Amin | Role: Test Automation Engineer | Experience: 2 years Industry: Software Testing and Automation | Location: Lahore, Pakistan\n2."
+        ],
+        "verified_claims": [
+          {
+            "claim": "Top matching candidates (fallback mode):\n1.",
+            "supported": false,
+            "reason": "Insufficient lexical overlap between claim and context."
+          },
+          {
+            "claim": "Candidate 1: Zubair ul Amin: Name: Zubair ul Amin | Role: Test Automation Engineer | Experience: 2 years Industry: Software Testing and Automation | Location: Lahore, Pakistan\n2.",
+            "supported": true,
+            "reason": "Lexical overlap found between claim and context."
+          }
+        ],
+        "generated_questions": [
+          "What are the main points about matching candidates fallback?",
+          "Which skills or qualifications are emphasized in matching candidates fallback?",
+          "What gaps or next steps are suggested in matching candidates fallback?"
+        ],
+        "similarity_scores": [
+          0.04454965144395828,
+          0.2085789442062378,
+          0.10761628299951553
+        ]
+      },
+      {
+        "query": "I have 4 years Python experience, Django and FastAPI, looking for backend roles",
+        "mode": "job",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.5,
+        "relevancy": 0.3780340254306793,
+        "retrieval_s": 1.8611342510012037,
+        "generation_s": 1.101848999998765,
+        "evaluation_s": 3.932885460999387,
+        "total_s": 6.895868711999356,
+        "answer": "Top suitable jobs (fallback mode):\n1. Job 1: Python/Django Developer: Job Title: Python/Django Developer Department:  | Industry: Technology\n2. Job 2: Director Engineering: Job Title: Director Engineering Department:  | Industry: Technology\n3. Job 3: Senior iOS Developer: Job Title: Senior iOS Developer Department:  | Industry: Technology\nUpskilling suggestion: Focus on skills repeatedly appearing in the top retrieved roles.\nNote: External LLM endpoint was unavailable; this response is generated from retrieved context.",
+        "claims": [
+          "Top suitable jobs (fallback mode):\n1.",
+          "Job 1: Python/Django Developer: Job Title: Python/Django Developer Department:  | Industry: Technology\n2."
+        ],
+        "verified_claims": [
+          {
+            "claim": "Top suitable jobs (fallback mode):\n1.",
+            "supported": false,
+            "reason": "Insufficient lexical overlap between claim and context."
+          },
+          {
+            "claim": "Job 1: Python/Django Developer: Job Title: Python/Django Developer Department:  | Industry: Technology\n2.",
+            "supported": true,
+            "reason": "Lexical overlap found between claim and context."
+          }
+        ],
+        "generated_questions": [
+          "What are the main points about suitable fallback Python?",
+          "Which skills or qualifications are emphasized in suitable fallback Python?",
+          "What gaps or next steps are suggested in suitable fallback Python?"
+        ],
+        "similarity_scores": [
+          0.3562067747116089,
+          0.5128942131996155,
+          0.2650010883808136
+        ]
+      },
+      {
+        "query": "React developer with 3 years experience, TypeScript and Next.js",
+        "mode": "job",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.5,
+        "relevancy": 0.2948505977789561,
+        "retrieval_s": 0.5967731250020734,
+        "generation_s": 1.3156538759976684,
+        "evaluation_s": 4.724731794001855,
+        "total_s": 6.6371587950015964,
+        "answer": "Based on the job postings and the candidate's profile, I recommend the top 3 most suitable jobs as follows:\n\n1. **Job 3: Python/Django Developer**: The candidate has 3 years of experience as a React developer, which is close to the required experience of 3-5 years for this role. Although the candidate's primary skill is in React, Python and Django are not entirely unrelated to React, as React can be used with Python and Django. The candidate's TypeScript and Next.js skills are also transferable to Python and Django development. Additionally, the candidate's experience in React can be valuable in understanding the front-end requirements of the Python/Django project.\n\n2. **Job 1: Senior Software Engineer - React Native**: Although the job posting requires 5+ years of experience, the candidate has 3 years of experience as a React developer, which is close to",
+        "claims": [
+          "The candidate has 3 years of experience as a React developer",
+          "The candidate's primary skill is in React",
+          "Python and Django are not entirely unrelated to React",
+          "React can be used with Python and Django",
+          "The candidate's TypeScript and Next.js skills are also transferable to Python and Django development",
+          "The candidate's experience in React can be valuable in understanding the front-end requirements of the Python/Django project",
+          "The job posting requires 5+ years of experience",
+          "The candidate has 3 years of experience as a React developer"
+        ],
+        "verified_claims": [
+          {
+            "claim": "The candidate has 3 years of experience as a React developer",
+            "supported": false,
+            "reason": "The job description requires 5+ years of experience, but the context only mentions 3 years of experience as a React developer."
+          },
+          {
+            "claim": "The candidate's primary skill is in React",
+            "supported": true,
+            "reason": "The job title explicitly mentions React Native, indicating a focus on React skills."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 job recommendations based on the candidate's profile?",
+          "Can you explain why the candidate is suitable for the Python/Django Developer role?",
+          "How does the candidate's React experience relate to the Senior Software Engineer - React Native role?"
+        ],
+        "similarity_scores": [
+          0.19655221700668335,
+          0.14730557799339294,
+          0.540693998336792
+        ]
+      },
+      {
+        "query": "DevOps engineer, 2 years with Docker, CI/CD, AWS",
+        "mode": "job",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.23047056794166565,
+        "retrieval_s": 0.5984346670011291,
+        "generation_s": 1.2720907500006433,
+        "evaluation_s": 5.538077627999883,
+        "total_s": 7.408603045001655,
+        "answer": "Based on the candidate's profile and the job postings, I recommend the top 3 most suitable jobs as follows:\n\n1. **Job 1: Senior DevOps Engineer**\nThe candidate's skills match this role perfectly, with 2 years of experience with Docker, CI/CD, and AWS. The required skills for this role, such as Python, Node.js, SQL, AWS, Azure, GCP, Kubernetes, CI/CD, and Git, are all within the candidate's skill set. The candidate's experience with Docker and CI/CD pipelines will be valuable in this role.\n\n2. **Job 3: Senior Software Engineer (.Net)**\nAlthough the candidate's primary experience is in DevOps, their skills in Docker, CI/CD, and Git can be applied to this role. The candidate may need to upskill in .NET, but their experience with containerization and",
+        "claims": [
+          "The candidate has 2 years of experience with Docker, CI/CD, and AWS.",
+          "The required skills for the Senior DevOps Engineer role, such as Python, Node.js, SQL, AWS, Azure, GCP, Kubernetes, CI/CD, and Git, are all within the candidate's skill set.",
+          "The candidate has experience with Docker and CI/CD pipelines.",
+          "The candidate's primary experience is in DevOps.",
+          "The candidate has skills in Docker, CI/CD, and Git.",
+          "The candidate may need to upskill in .NET."
+        ],
+        "verified_claims": [
+          {
+            "claim": "The candidate has 2 years of experience with Docker, CI/CD, and AWS.",
+            "supported": false,
+            "reason": "The job description requires 5-+ years of experience, but the candidate has only 2 years of experience."
+          },
+          {
+            "claim": "The required skills for the Senior DevOps Engineer role, such as Python, Node.js, SQL, AWS, Azure, GCP, Kubernetes, CI/CD, and Git, are all within the candidate's skill set.",
+            "supported": false,
+            "reason": "The required skills for the Senior DevOps Engineer role are not mentioned in the Director Engineering job description, which has different required skills."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 job recommendations for the candidate based on their profile and job postings?",
+          "Can you explain why the candidate is suitable for the Senior DevOps Engineer role?",
+          "How does the candidate's experience align with the required skills for the Senior Software Engineer (.Net) role?"
+        ],
+        "similarity_scores": [
+          0.13586750626564026,
+          0.40438738465309143,
+          0.15115681290626526
+        ]
+      },
+      {
+        "query": "Data scientist with scikit-learn, pandas, 2 years ML experience",
+        "mode": "job",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.28870410720507306,
+        "retrieval_s": 1.213816167000914,
+        "generation_s": 1.4089673339985893,
+        "evaluation_s": 4.938691418999952,
+        "total_s": 7.561474919999455,
+        "answer": "Based on the candidate's profile and the retrieved job postings, I recommend the top 3 most suitable jobs as follows:\n\n1. **Job 3: Associate Data Scientist**\nThe candidate's 2 years of ML experience and skills in scikit-learn and pandas make them a suitable candidate for this role. Although the job requires a Bachelor's degree in Data Science or another AI-related field, the candidate's experience can be considered equivalent. This role is a good fit for the candidate as it provides an opportunity to work with a team of experienced data scientists and contribute to developing cutting-edge AI solutions.\n\n2. **Job 1: Data Scientist - Malomatia**\nAlthough the job requires 5+ years of experience, the candidate's 2 years of ML experience can be considered a good starting point. The job involves working with machine learning models and advanced analytics artifacts, which aligns with the",
+        "claims": [
+          "The candidate has 2 years of ML experience",
+          "The candidate has skills in scikit-learn and pandas",
+          "The job Associate Data Scientist requires a Bachelor's degree in Data Science or another AI-related field",
+          "The candidate's experience can be considered equivalent to a Bachelor's degree in Data Science or another AI-related field",
+          "The job Associate Data Scientist provides an opportunity to work with a team of experienced data scientists",
+          "The job Associate Data Scientist involves contributing to developing cutting-edge AI solutions",
+          "The job Data Scientist - Malomatia requires 5+ years of experience",
+          "The job Data Scientist - Malomatia involves working with machine learning models and advanced analytics artifacts"
+        ],
+        "verified_claims": [
+          {
+            "claim": "The candidate has 2 years of ML experience",
+            "supported": false,
+            "reason": "The job requires 5-+ years of experience, which is more than the candidate's 2 years of ML experience."
+          },
+          {
+            "claim": "The candidate has skills in scikit-learn and pandas",
+            "supported": false,
+            "reason": "The job briefs do not explicitly mention scikit-learn or pandas, but they do mention machine learning models and advanced analytics artifacts, which suggests that the candidate should have knowledge of relevant libraries."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 job recommendations for the candidate?",
+          "Can you explain why Job 3: Associate Data Scientist is a good fit for the candidate?",
+          "How does the candidate's experience align with the requirements of Job 1: Data Scientist - Malomatia?"
+        ],
+        "similarity_scores": [
+          0.15894094109535217,
+          0.3145643472671509,
+          0.39260703325271606
+        ]
+      },
+      {
+        "query": "Full stack developer, Node.js backend, React frontend, 3 years total",
+        "mode": "job",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.05187146986524264,
+        "retrieval_s": 2.2783652510006505,
+        "generation_s": 1.196601625000767,
+        "evaluation_s": 4.739653668999381,
+        "total_s": 8.214620545000798,
+        "answer": "Based on the candidate's profile and the job postings, I recommend the top 3 most suitable jobs as follows:\n\n1.  **Job 5: Python/Django Developer**\n    *   The candidate has 3 years of experience as a full-stack developer, which matches the experience required for this role.\n    *   The candidate's skills in Node.js backend and React frontend are not explicitly mentioned as required skills for this role, but they could be transferable to Django development.\n    *   The candidate's experience in Node.js backend and React frontend could be an asset in this role, as they might be able to adapt their skills to Django development.\n\n2.  **Job 1: Senior DevOps Engineer**\n    *   The candidate has 3 years of experience as a full-stack developer, which is less than the 5-+ years required for this role.\n    *",
+        "claims": [
+          "The candidate has 3 years of experience as a full-stack developer, which matches the experience required for this role.",
+          "The candidate's skills in Node.js backend and React frontend are not explicitly mentioned as required skills for this role, but they could be transferable to Django development.",
+          "The candidate's experience in Node.js backend and React frontend could be an asset in this role, as they might be able to adapt their skills to Django development.",
+          "The candidate has 3 years of experience as a full-stack developer, which is less than the 5-+ years required for this role."
+        ],
+        "verified_claims": [
+          {
+            "claim": "The candidate has 3 years of experience as a full-stack developer, which matches the experience required for this role.",
+            "supported": false,
+            "reason": "The experience required for the Senior DevOps Engineer role is 5-+ years, which does not match the candidate's 3 years of experience as a full-stack developer."
+          },
+          {
+            "claim": "The candidate's skills in Node.js backend and React frontend are not explicitly mentioned as required skills for this role, but they could be transferable to Django development.",
+            "supported": false,
+            "reason": "The job description explicitly mentions React Native, which is a different technology stack than the required skills for the Senior DevOps Engineer role."
+          }
+        ],
+        "generated_questions": [
+          "What are the main points about Based candidate profile?",
+          "Which skills or qualifications are emphasized in Based candidate profile?",
+          "What gaps or next steps are suggested in Based candidate profile?"
+        ],
+        "similarity_scores": [
+          0.051277585327625275,
+          0.03021812066435814,
+          0.0741187036037445
+        ]
+      }
+    ],
+    "example_verifications": [
+      {
+        "query": "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.36751407384872437,
+        "retrieval_s": 1.9128438339976128,
+        "generation_s": 2.2996611680027854,
+        "evaluation_s": 6.271663502997399,
+        "total_s": 10.484168504997797,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the Python backend developer position with FastAPI and PostgreSQL are:\n\n1. **Candidate 2: Umair Qasim**\nUmair Qasim matches the requirement because:\n- He has 4 years of experience as a Full Stack Python Developer.\n- He has listed Python as his primary skill.\n- He has experience working with PostgreSQL, which is a requirement.\n- Although he has more experience with Django, he has also worked with FastAPI is not explicitly mentioned but his experience with multiple frameworks suggests he can adapt to new ones.\n\n2. **Candidate 5: Muhammad Talha**\nMuhammad Talha matches the requirement because:\n- He has listed Python as his primary skill.\n- He has experience working with PostgreSQL, which is a requirement.\n- He has experience with FastAPI is not explicitly mentioned but his experience with multiple",
+        "claims": [
+          "He has 4 years of experience as a Full Stack Python Developer.",
+          "He has listed Python as his primary skill.",
+          "He has experience working with PostgreSQL, which is a requirement.",
+          "Although he has more experience with Django, he has also worked with FastAPI is not explicitly mentioned but his experience with multiple frameworks suggests he can adapt to new ones.",
+          "He has listed Python as his primary skill.",
+          "He has experience working with PostgreSQL, which is a requirement.",
+          "He has experience with FastAPI is not explicitly mentioned but his experience with multiple frameworks suggests he can adapt to new ones."
+        ],
+        "verified_claims": [
+          {
+            "claim": "He has 4 years of experience as a Full Stack Python Developer.",
+            "supported": false,
+            "reason": "The context does not mention Syed Muhammad Ali as a Full Stack Python Developer, but rather Umair Qasim is mentioned with that role."
+          },
+          {
+            "claim": "He has listed Python as his primary skill.",
+            "supported": false,
+            "reason": "The claim is not supported because Syed Muhammad Ali has listed multiple skills as primary, including Python, but it does not explicitly state that Python is his primary skill."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the Python backend developer position with FastAPI and PostgreSQL?",
+          "Can you explain why Umair Qasim is a good fit for the position?",
+          "How does Muhammad Talha's experience align with the job requirements?"
+        ],
+        "similarity_scores": [
+          0.8241838216781616,
+          0.07417681813240051,
+          0.20418158173561096
+        ]
+      },
+      {
+        "query": "Need a React frontend developer with TypeScript experience",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 1.0,
+        "relevancy": 0.3563762406508128,
+        "retrieval_s": 1.4563470839966612,
+        "generation_s": 1.7599885420022474,
+        "evaluation_s": 5.724344628000836,
+        "total_s": 8.940680253999744,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the React frontend developer with TypeScript experience are:\n\n1. **Candidate 1: Shakeel Mazhar**\nShakeel has 4 years of experience as a React Native developer, but his profile also mentions that he has experience with React.js and TypeScript. He has worked on optimizing code, making it reusable, and fixing type annotations of TypeScript across a project. This suggests that he has hands-on experience with TypeScript and can apply it to a React frontend development role.\n\n2. **Candidate 2: Sufian Babri**\nSufian has 6 years of experience as a mobile application developer, with expertise in React Native and React.js. His profile explicitly mentions TypeScript as one of his skills, and he has experience with automated testing, Jest, and React Hooks. This makes him a strong candidate for the role.\n\n3",
+        "claims": [
+          "Shakeel has 4 years of experience as a React Native developer",
+          "Shakeel has experience with React.js and TypeScript",
+          "Shakeel has worked on optimizing code, making it reusable, and fixing type annotations of TypeScript across a project",
+          "Sufian has 6 years of experience as a mobile application developer",
+          "Sufian has expertise in React Native and React.js",
+          "Sufian's profile explicitly mentions TypeScript as one of his skills",
+          "Sufian has experience with automated testing, Jest, and React Hooks"
+        ],
+        "verified_claims": [
+          {
+            "claim": "Shakeel has 4 years of experience as a React Native developer",
+            "supported": true,
+            "reason": "The claim is supported by the 'Experience' section of Shakeel's profile."
+          },
+          {
+            "claim": "Shakeel has experience with React.js and TypeScript",
+            "supported": true,
+            "reason": "Shakeel's skills include React.js and TypeScript, and his work experience mentions fixing TypeScript type annotations."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the React frontend developer with TypeScript experience?",
+          "Can you provide a detailed analysis of the candidate profiles?",
+          "Who are the top candidates based on their experience and skills?"
+        ],
+        "similarity_scores": [
+          0.8034121990203857,
+          0.1005544364452362,
+          0.1651620864868164
+        ]
+      },
+      {
+        "query": "Seeking a DevOps engineer with Docker and Kubernetes skills",
+        "mode": "candidate",
+        "strategy": "hybrid_rrf_ce",
+        "retrieval_count": 5,
+        "faithfulness": 0.0,
+        "relevancy": 0.6338227192560831,
+        "retrieval_s": 0.7150744999999006,
+        "generation_s": 1.5581655839996529,
+        "evaluation_s": 6.417278044998966,
+        "total_s": 8.69051812899852,
+        "answer": "Based on the provided candidate profiles, the top 3 matching candidates for the DevOps engineer position with Docker and Kubernetes skills are:\n\n1. **Candidate 1: M. Zakaria Nazir**\nM. Zakaria Nazir matches the requirement due to his extensive experience with Docker, Kubernetes, and AWS Cloud. His primary skills include Docker, Kubernetes, and AWS Cloud, which aligns with the job requirement. He has also worked with AWS Lambda, EKS, ECS, ECR, and CI/CD, which are relevant to the position.\n\n2. **Candidate 2: Usman Ali Khan**\nUsman Ali Khan matches the requirement due to his primary skills in Docker, Kubernetes, and AWS. Although his profile is more extensive, his experience with Docker, Kubernetes, and AWS aligns with the job requirement. However, his skills in Google Cloud Platform (GCP) and Azure",
+        "claims": [
+          "M. Zakaria Nazir matches the requirement due to his extensive experience with Docker, Kubernetes, and AWS Cloud.",
+          "His primary skills include Docker, Kubernetes, and AWS Cloud, which aligns with the job requirement.",
+          "He has also worked with AWS Lambda, EKS, ECS, ECR, and CI/CD, which are relevant to the position.",
+          "Usman Ali Khan matches the requirement due to his primary skills in Docker, Kubernetes, and AWS.",
+          "Although his profile is more extensive, his experience with Docker, Kubernetes, and AWS aligns with the job requirement.",
+          "His skills in Google Cloud Platform (GCP) and Azure"
+        ],
+        "verified_claims": [
+          {
+            "claim": "M. Zakaria Nazir matches the requirement due to his extensive experience with Docker, Kubernetes, and AWS Cloud.",
+            "supported": false,
+            "reason": "The context does not mention any experience with Kubernetes, AWS Cloud, or Docker."
+          },
+          {
+            "claim": "His primary skills include Docker, Kubernetes, and AWS Cloud, which aligns with the job requirement.",
+            "supported": false,
+            "reason": "The claim is not supported because the provided context does not mention Docker, Kubernetes, and AWS Cloud as the primary skills of M. Zakaria Nazir."
+          }
+        ],
+        "generated_questions": [
+          "What are the top 3 matching candidates for the DevOps engineer position?",
+          "Can you provide a list of candidates with Docker and Kubernetes skills?",
+          "Who are the candidates that match the job requirement for the DevOps engineer position?"
+        ],
+        "similarity_scores": [
+          0.5670516490936279,
+          0.7408550977706909,
+          0.5935614109039307
+        ]
+      }
+    ]
+  },
+  "ablation": {
+    "retrieval": {
+      "summary_by_strategy": {
+        "semantic_only": {
+          "count": 3,
+          "avg_faithfulness": 0.3333333333333333,
+          "avg_relevancy": 0.044572406344943576,
+          "avg_retrieval_s": 0.3164510000012039,
+          "avg_generation_s": 0.8634672643323332,
+          "avg_evaluation_s": 3.916308182667611,
+          "avg_total_s": 5.096226447001148
+        },
+        "hybrid_rrf": {
+          "count": 3,
+          "avg_faithfulness": 0.5,
+          "avg_relevancy": 0.044572406344943576,
+          "avg_retrieval_s": 0.2601149029978842,
+          "avg_generation_s": 0.923003417000776,
+          "avg_evaluation_s": 3.6704070853326507,
+          "avg_total_s": 4.853525405331311
+        },
+        "hybrid_rrf_ce": {
+          "count": 3,
+          "avg_faithfulness": 0.16666666666666666,
+          "avg_relevancy": 0.3586814867125617,
+          "avg_retrieval_s": 0.9765780009996282,
+          "avg_generation_s": 1.5700123616661585,
+          "avg_evaluation_s": 5.06671322466597,
+          "avg_total_s": 7.613303587331757
+        }
+      },
+      "rows": [
+        {
+          "query": "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
+          "mode": "candidate",
+          "strategy": "semantic_only",
+          "retrieval_count": 5,
+          "faithfulness": 0.5,
+          "relevancy": 0.03252672404050827,
+          "retrieval_s": 0.33249050000085845,
+          "generation_s": 0.8554342919996998,
+          "evaluation_s": 4.107196544002363,
+          "total_s": 5.2951213360029215
+        },
+        {
+          "query": "Need a React frontend developer with TypeScript experience",
+          "mode": "candidate",
+          "strategy": "semantic_only",
+          "retrieval_count": 5,
+          "faithfulness": 0.5,
+          "relevancy": 0.02402716875076294,
+          "retrieval_s": 0.27662483300082386,
+          "generation_s": 0.8484019589996024,
+          "evaluation_s": 3.738466585000424,
+          "total_s": 4.86349337700085
+        },
+        {
+          "query": "Seeking a DevOps engineer with Docker and Kubernetes skills",
+          "mode": "candidate",
+          "strategy": "semantic_only",
+          "retrieval_count": 5,
+          "faithfulness": 0.0,
+          "relevancy": 0.07716332624355952,
+          "retrieval_s": 0.34023766700192937,
+          "generation_s": 0.8865655419976974,
+          "evaluation_s": 3.903261419000046,
+          "total_s": 5.130064627999673
+        },
+        {
+          "query": "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
+          "mode": "candidate",
+          "strategy": "hybrid_rrf",
+          "retrieval_count": 5,
+          "faithfulness": 0.5,
+          "relevancy": 0.03252672404050827,
+          "retrieval_s": 0.26843204199758475,
+          "generation_s": 0.8598447920012404,
+          "evaluation_s": 3.7423031270009233,
+          "total_s": 4.870579960999748
+        },
+        {
+          "query": "Need a React frontend developer with TypeScript experience",
+          "mode": "candidate",
+          "strategy": "hybrid_rrf",
+          "retrieval_count": 5,
+          "faithfulness": 0.5,
+          "relevancy": 0.02402716875076294,
+          "retrieval_s": 0.2555154589972517,
+          "generation_s": 0.8619778330030385,
+          "evaluation_s": 3.599690043996816,
+          "total_s": 4.717183335997106
+        },
+        {
+          "query": "Seeking a DevOps engineer with Docker and Kubernetes skills",
+          "mode": "candidate",
+          "strategy": "hybrid_rrf",
+          "retrieval_count": 5,
+          "faithfulness": 0.5,
+          "relevancy": 0.07716332624355952,
+          "retrieval_s": 0.25639720799881616,
+          "generation_s": 1.047187625998049,
+          "evaluation_s": 3.6692280850002135,
+          "total_s": 4.972812918997079
+        },
+        {
+          "query": "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
+          "mode": "candidate",
+          "strategy": "hybrid_rrf_ce",
+          "retrieval_count": 5,
+          "faithfulness": 0.5,
+          "relevancy": 0.12319998443126678,
+          "retrieval_s": 0.9457364180016157,
+          "generation_s": 1.2531564169985359,
+          "evaluation_s": 4.950932251998893,
+          "total_s": 7.149825086999044
+        },
+        {
+          "query": "Need a React frontend developer with TypeScript experience",
+          "mode": "candidate",
+          "strategy": "hybrid_rrf_ce",
+          "retrieval_count": 5,
+          "faithfulness": 0.0,
+          "relevancy": 0.251774862408638,
+          "retrieval_s": 1.180533626000397,
+          "generation_s": 1.4734955419990001,
+          "evaluation_s": 4.939512210999965,
+          "total_s": 7.593541378999362
+        },
+        {
+          "query": "Seeking a DevOps engineer with Docker and Kubernetes skills",
+          "mode": "candidate",
+          "strategy": "hybrid_rrf_ce",
+          "retrieval_count": 5,
+          "faithfulness": 0.0,
+          "relevancy": 0.7010696132977804,
+          "retrieval_s": 0.803463958996872,
+          "generation_s": 1.9833851260009396,
+          "evaluation_s": 5.3096952109990525,
+          "total_s": 8.096544295996864
+        }
+      ]
+    },
+    "chunking": {
+      "summary_by_chunking": {
+        "fixed": {
+          "count": 2,
+          "avg_faithfulness": 0.75,
+          "avg_relevancy": 0.029051756486296654,
+          "avg_retrieval_s": 0.6752474380009517,
+          "avg_generation_s": 1.354821646000346,
+          "avg_evaluation_s": 6.132278253500772,
+          "avg_total_s": 8.16234733750207,
+          "chunk_count": 1045
+        },
+        "recursive": {
+          "count": 2,
+          "avg_faithfulness": 0.25,
+          "avg_relevancy": 0.2195579732457797,
+          "avg_retrieval_s": 0.691233708499567,
+          "avg_generation_s": 1.8865283964987611,
+          "avg_evaluation_s": 6.32486689900179,
+          "avg_total_s": 8.902629004000119,
+          "chunk_count": 984
+        }
+      },
+      "rows": [
+        {
+          "query": "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
+          "chunking": "fixed",
+          "chunk_count": 1045,
+          "faithfulness": 1.0,
+          "relevancy": 0.03407634422183037,
+          "retrieval_s": 0.6258450419991277,
+          "generation_s": 1.7011070000007749,
+          "evaluation_s": 6.757808629001374,
+          "total_s": 9.084760671001277
+        },
+        {
+          "query": "Need a React frontend developer with TypeScript experience",
+          "chunking": "fixed",
+          "chunk_count": 1045,
+          "faithfulness": 0.5,
+          "relevancy": 0.02402716875076294,
+          "retrieval_s": 0.7246498340027756,
+          "generation_s": 1.008536291999917,
+          "evaluation_s": 5.506747878000169,
+          "total_s": 7.239934004002862
+        },
+        {
+          "query": "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
+          "chunking": "recursive",
+          "chunk_count": 984,
+          "faithfulness": 0.5,
+          "relevancy": 0.18616548677285513,
+          "retrieval_s": 0.7029037079992122,
+          "generation_s": 2.3389817509996647,
+          "evaluation_s": 5.806532253001933,
+          "total_s": 8.84841771200081
+        },
+        {
+          "query": "Need a React frontend developer with TypeScript experience",
+          "chunking": "recursive",
+          "chunk_count": 984,
+          "faithfulness": 0.0,
+          "relevancy": 0.2529504597187042,
+          "retrieval_s": 0.6795637089999218,
+          "generation_s": 1.4340750419978576,
+          "evaluation_s": 6.843201545001648,
+          "total_s": 8.956840295999427
+        }
+      ]
+    }
+  }
+}

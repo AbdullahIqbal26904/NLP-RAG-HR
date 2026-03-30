@@ -1,4 +1,7 @@
 """Streamlit UI - RAG Talent Matching. Deployed on HuggingFace Spaces."""
+import os
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
@@ -26,6 +29,29 @@ def load_evaluator():
     from pipeline.evaluation import RAGEvaluator
 
     return RAGEvaluator()
+
+
+def load_ablation_table() -> pd.DataFrame:
+    csv_path = Path("reports/ablation_summary.csv")
+    if csv_path.exists():
+        try:
+            return pd.read_csv(csv_path)
+        except Exception:
+            pass
+
+    return pd.DataFrame(
+        {
+            "Strategy": [
+                "Semantic only",
+                "Hybrid + RRF",
+                "Hybrid + RRF + CE",
+                "Chunking: Fixed (Hybrid + RRF + CE)",
+                "Chunking: Recursive (Hybrid + RRF + CE)",
+            ],
+            "Faithfulness": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "Relevancy": [0.0, 0.0, 0.0, 0.0, 0.0],
+        }
+    )
 
 
 # Header
@@ -127,22 +153,10 @@ if search and query.strip():
 # Sidebar: Ablation study
 with st.sidebar:
     st.header("📊 Ablation Study")
-    ablation = pd.DataFrame(
-        {
-            "Strategy": [
-                "Fixed + Semantic only",
-                "Recursive + Semantic only",
-                "Semantic + Semantic only",
-                "Fixed + Hybrid + RRF",
-                "Semantic + Hybrid + RRF + CE",
-            ],
-            "Faithfulness": [0.71, 0.74, 0.76, 0.79, 0.85],
-            "Relevancy": [0.68, 0.72, 0.74, 0.77, 0.83],
-        }
-    )
+    ablation = load_ablation_table()
     st.dataframe(ablation, use_container_width=True, hide_index=True)
     st.divider()
     st.caption("Embedding: all-MiniLM-L6-v2")
-    st.caption("LLM: Mistral-7B-Instruct-v0.2")
+    st.caption(f"LLM: {os.getenv('HF_MODEL_ID', 'N/A')}")
     st.caption("Re-ranker: ms-marco-MiniLM-L-6-v2")
     st.caption("Vector DB: Pinecone Serverless")

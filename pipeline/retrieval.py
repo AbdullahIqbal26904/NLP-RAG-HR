@@ -45,13 +45,37 @@ class HybridRetriever:
         self.top_k = int(os.getenv("TOP_K_RETRIEVE", 20))
         self.top_k_final = int(os.getenv("TOP_K_RERANK", 5))
 
-    def retrieve(self, query: str, mode: SearchMode) -> list[dict]:
+    def retrieve(self, query: str, mode: SearchMode, strategy: str = "hybrid_rrf_ce") -> list[dict]:
         query_vector = self.embedding_model.encode(query, normalize_embeddings=True).tolist()
         semantic = self._semantic_search(query_vector, mode)
         bm25 = self._bm25_search(query, mode)
+
+        if strategy == "semantic_only":
+            ranked = sorted(semantic, key=lambda x: x.get("score", 0.0), reverse=True)[: self.top_k_final]
+            for i, doc in enumerate(ranked, 1):
+                doc.setdefault("semantic_score", doc.get("score", 0.0))
+                doc.setdefault("bm25_score", 0.0)
+                doc.setdefault("rrf_score", 0.0)
+                doc.setdefault("cross_encoder_score", 0.0)
+                doc["final_rank"] = i
+            return ranked
+
         fused = self._rrf_fusion(semantic, bm25)
-        reranked = self._cross_encoder_rerank(query, fused)
-        return reranked[:self.top_k_final]
+
+        if strategy == "hybrid_rrf":
+            ranked = fused[: self.top_k_final]
+            for i, doc in enumerate(ranked, 1):
+                doc.setdefault("cross_encoder_score", 0.0)
+                doc["final_rank"] = i
+            return ranked
+
+        if strategy == "hybrid_rrf_ce":
+            reranked = self._cross_encoder_rerank(query, fused)
+            return reranked[:self.top_k_final]
+
+        raise ValueError(
+            f"Unknown strategy '{strategy}'. Use one of: semantic_only, hybrid_rrf, hybrid_rrf_ce"
+        )
 
     def _semantic_search(self, query_vector: list, mode: SearchMode) -> list[dict]:
         index = self.candidate_index if mode == "candidate" else self.job_index

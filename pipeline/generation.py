@@ -30,8 +30,12 @@ def _extract_generated_text(payload) -> str:
                 if isinstance(text, str):
                     return text
                 message = choice.get("message")
-                if isinstance(message, dict) and isinstance(message.get("content"), str):
-                    return message["content"]
+                if isinstance(message, dict):
+                    if isinstance(message.get("content"), str) and message.get("content").strip():
+                        return message["content"]
+                    # Some provider backends return reasoning separately from content.
+                    if isinstance(message.get("reasoning"), str) and message.get("reasoning").strip():
+                        return message["reasoning"]
     if isinstance(payload, list) and payload:
         first = payload[0]
         if isinstance(first, dict) and isinstance(first.get("generated_text"), str):
@@ -77,6 +81,42 @@ def _router_text_generation(
         return response.text.strip()
 
     return _extract_generated_text(parsed).strip()
+
+
+def _heuristic_answer_from_prompt(prompt: str) -> str:
+    def _collect_entries(anchor: str) -> list[str]:
+        if anchor not in prompt:
+            return []
+        section = prompt.split(anchor, 1)[1]
+        if "Based only on" in section:
+            section = section.split("Based only on", 1)[0]
+        return [p.strip() for p in section.split("\n\n---\n\n") if p.strip()]
+
+    candidate_entries = _collect_entries("RETRIEVED CANDIDATE PROFILES:")
+    if candidate_entries:
+        lines = ["Top matching candidates (fallback mode):"]
+        for i, entry in enumerate(candidate_entries[:3], 1):
+            parts = [x.strip() for x in entry.splitlines() if x.strip()]
+            title = parts[0] if parts else f"Candidate {i}"
+            snippet = " ".join(parts[1:3])[:240]
+            lines.append(f"{i}. {title}: {snippet}")
+        lines.append("Skill gaps: Review the retrieved context for missing technologies and domain depth.")
+        lines.append("Note: External LLM endpoint was unavailable; this response is generated from retrieved context.")
+        return "\n".join(lines)
+
+    job_entries = _collect_entries("RETRIEVED JOB POSTINGS:")
+    if job_entries:
+        lines = ["Top suitable jobs (fallback mode):"]
+        for i, entry in enumerate(job_entries[:3], 1):
+            parts = [x.strip() for x in entry.splitlines() if x.strip()]
+            title = parts[0] if parts else f"Job {i}"
+            snippet = " ".join(parts[1:3])[:240]
+            lines.append(f"{i}. {title}: {snippet}")
+        lines.append("Upskilling suggestion: Focus on skills repeatedly appearing in the top retrieved roles.")
+        lines.append("Note: External LLM endpoint was unavailable; this response is generated from retrieved context.")
+        return "\n".join(lines)
+
+    return "No generated answer available from external LLM. Please review retrieved context results."
 
 
 def build_recruiter_prompt(query: str, results: list[dict]) -> str:
@@ -134,10 +174,13 @@ def generate_answer(prompt: str, max_tokens: int = 512) -> str:
         )
         return response.strip()
     except Exception:
-        return _router_text_generation(
-            formatted_prompt,
-            max_tokens=max_tokens,
-            temperature=0.3,
-            repetition_penalty=1.1,
-            do_sample=True,
-        )
+        try:
+            return _router_text_generation(
+                formatted_prompt,
+                max_tokens=max_tokens,
+                temperature=0.3,
+                repetition_penalty=1.1,
+                do_sample=True,
+            )
+        except Exception:
+            return _heuristic_answer_from_prompt(prompt)
