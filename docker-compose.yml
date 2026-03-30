@@ -7,4 +7,11 @@ services:
       - "8501:8501"
     env_file:
       - .env
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+      - st_cache:/root/.cache/torch/sentence_transformers
     restart: unless-stopped
+
+volumes:
+  hf_cache:
+  st_cache:
