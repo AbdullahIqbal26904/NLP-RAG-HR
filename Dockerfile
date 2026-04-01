@@ -18,7 +18,6 @@ RUN python -m pip install --upgrade pip && \
 COPY app.py ./
 COPY pipeline ./pipeline
 COPY data/candidates.json ./data/candidates.json
-COPY data/jobs.json ./data/jobs.json
 COPY README.md ./README.md
 
 EXPOSE 8501

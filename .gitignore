@@ -34,5 +34,6 @@ dist/
 
 # Keep only exported JSON data in Git
 data/*
-# !data/candidates.json
+!data/candidates.json
 # !data/jobs.json
+

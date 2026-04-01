@@ -31,8 +31,11 @@ class HybridRetriever:
 
         with open("data/candidates.json", encoding="utf-8") as f:
             candidates = json.load(f)
-        with open("data/jobs.json", encoding="utf-8") as f:
-            jobs = json.load(f)
+
+        jobs = []
+        if os.path.exists("data/jobs.json"):
+            with open("data/jobs.json", encoding="utf-8") as f:
+                jobs = json.load(f)
 
         self._candidate_ids = [str(c["candidate_id"]) for c in candidates]
         self._job_ids = [str(j["job_id"]) for j in jobs]
@@ -40,7 +43,7 @@ class HybridRetriever:
         self._job_texts = [serialize_job(j) for j in jobs]
 
         self._bm25_candidates = BM25Okapi([t.lower().split() for t in self._candidate_texts])
-        self._bm25_jobs = BM25Okapi([t.lower().split() for t in self._job_texts])
+        self._bm25_jobs = BM25Okapi([t.lower().split() for t in self._job_texts]) if self._job_texts else None
 
         self.top_k = int(os.getenv("TOP_K_RETRIEVE", 20))
         self.top_k_final = int(os.getenv("TOP_K_RERANK", 5))
@@ -96,6 +99,8 @@ class HybridRetriever:
             scores = self._bm25_candidates.get_scores(tokens)
             ids, texts = self._candidate_ids, self._candidate_texts
         else:
+            if self._bm25_jobs is None:
+                return []
             scores = self._bm25_jobs.get_scores(tokens)
             ids, texts = self._job_ids, self._job_texts
 

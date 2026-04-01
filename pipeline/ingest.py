@@ -94,23 +94,44 @@ def embed_and_upsert(index, records, serialize_fn, id_field, metadata_fn, model)
     print(f"Done - {len(vectors)} vectors upserted")
 
 
+def clear_index(pc: Pinecone, index_name: str):
+    """Delete all vectors from an existing index."""
+    existing = [idx.name for idx in pc.list_indexes()]
+    if index_name in existing:
+        index = pc.Index(index_name)
+        index.delete(delete_all=True)
+        print(f"Cleared all vectors from index: {index_name}")
+    else:
+        print(f"Index {index_name} does not exist, nothing to clear")
+
+
 def main():
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     model = SentenceTransformer(EMBEDDING_MODEL)
     dimension = model.get_sentence_embedding_dimension()
 
+    # Clear existing embeddings
+    print("\n--- Clearing existing embeddings ---")
+    clear_index(pc, CANDIDATE_INDEX)
+    clear_index(pc, JOB_INDEX)
+
     with open("data/candidates.json", encoding="utf-8") as f:
         candidates = json.load(f)
-    with open("data/jobs.json", encoding="utf-8") as f:
-        jobs = json.load(f)
 
     print(f"\n--- Ingesting {len(candidates)} candidates ---")
     cand_index = get_or_create_index(pc, CANDIDATE_INDEX, dimension)
     embed_and_upsert(cand_index, candidates, serialize_candidate, "candidate_id", build_candidate_metadata, model)
 
-    print(f"\n--- Ingesting {len(jobs)} jobs ---")
-    job_index = get_or_create_index(pc, JOB_INDEX, dimension)
-    embed_and_upsert(job_index, jobs, serialize_job, "job_id", build_job_metadata, model)
+    # Ingest jobs if available
+    jobs_path = "data/jobs.json"
+    if os.path.exists(jobs_path):
+        with open(jobs_path, encoding="utf-8") as f:
+            jobs = json.load(f)
+        print(f"\n--- Ingesting {len(jobs)} jobs ---")
+        job_index = get_or_create_index(pc, JOB_INDEX, dimension)
+        embed_and_upsert(job_index, jobs, serialize_job, "job_id", build_job_metadata, model)
+    else:
+        print("\nNo jobs.json found, skipping job ingestion")
 
     print("\nIngestion complete")
 

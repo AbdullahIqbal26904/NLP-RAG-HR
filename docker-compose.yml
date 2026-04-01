@@ -10,7 +10,20 @@ services:
     volumes:
       - hf_cache:/root/.cache/huggingface
       - st_cache:/root/.cache/torch/sentence_transformers
+      - ./data:/app/data
+      - ./pipeline:/app/pipeline
     restart: unless-stopped
+
+  etl:
+    build:
+      context: .
+      dockerfile: Dockerfile.etl
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    profiles:
+      - etl
 
 volumes:
   hf_cache:
