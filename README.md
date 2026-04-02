@@ -9,9 +9,11 @@ Two publicly available Kaggle datasets:
 - **Resumes:** `data/resumes_dataset.jsonl` — 3,500 resumes across 36 categories (Java Developer, Python Developer, DevOps, Data Science, etc.)
 - **Job Descriptions:** `data/job_title_des.csv` — 2,277 job postings across 15 unique job titles (Backend Developer, Full Stack Developer, Machine Learning, etc.)
 
-Each resume and each job description gets its own vector embedding in Pinecone. The system supports two search modes:
+Each resume and each job description gets its own vector embedding in Pinecone. The system supports:
 - **Recruiter mode:** Input a job requirement, retrieve matching candidate resumes
 - **Candidate mode:** Input your profile/skills, retrieve matching job postings
+- **Add Resume:** Candidates can submit their resume via the UI — it is saved to the JSONL file, embedded, and upserted to Pinecone instantly
+- **Add Job:** Recruiters can post a new job description via the UI — it is saved to the CSV file, embedded, and upserted to Pinecone instantly
 
 ## Architecture
 
@@ -47,12 +49,28 @@ data/resumes_dataset.jsonl  +  data/job_title_des.csv
                    |
                    v
          [Streamlit Dashboard]  (app.py)
-           - Generated answer
-           - Full original data from dataset for each result
-           - Retrieval scores (CE, Semantic, BM25, RRF)
+           - Search tab: generated answer, full original data, retrieval scores
+           - Add Resume tab: submit resume -> saved + embedded + indexed live
+           - Add Job tab: post job -> saved + embedded + indexed live
            - Faithfulness & Relevancy scores
            - Ablation study sidebar
 ```
+
+## Live Data Submission
+
+Users can add new resumes and job postings directly from the Streamlit UI without restarting the application.
+
+**Add Resume (Candidates):**
+- Fill in: Name, Email, Phone, Location, Job Category, Skills, Education, Summary, Experience
+- On submit: saved to `data/resumes_dataset.jsonl`, embedded with all-MiniLM-L6-v2, upserted to Pinecone, BM25 index rebuilt
+- Immediately searchable by recruiters
+
+**Add Job (Recruiters):**
+- Fill in: Job Title, Job Description
+- On submit: saved to `data/job_title_des.csv`, embedded with all-MiniLM-L6-v2, upserted to Pinecone, BM25 index rebuilt
+- Immediately searchable by candidates
+
+User-submitted entries use IDs prefixed with `USER_` (resumes) and `USERJOB_` (jobs) to distinguish them from the original Kaggle data.
 
 ## Quick Start (Docker)
 

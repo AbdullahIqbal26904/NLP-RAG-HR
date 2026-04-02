@@ -37,6 +37,19 @@ def _next_resume_id() -> str:
     return f"USER_{max_num + 1:04d}"
 
 
+def _next_job_id() -> str:
+    """Generate next USERJOB_XXXX ID."""
+    retriever = load_retriever()
+    max_num = 0
+    for jid in retriever._job_ids:
+        if jid.startswith("USERJOB_"):
+            try:
+                max_num = max(max_num, int(jid.split("_")[1]))
+            except (IndexError, ValueError):
+                pass
+    return f"USERJOB_{max_num + 1:04d}"
+
+
 @st.cache_resource
 def load_retriever():
     from pipeline.retrieval import HybridRetriever
@@ -79,7 +92,7 @@ st.title("AI Talent Matching RAG")
 st.caption("Hybrid BM25 + Semantic Search -> RRF -> CrossEncoder Re-ranking -> LLM Generation")
 
 # Main tabs
-tab_search, tab_add = st.tabs(["Search", "Add Resume"])
+tab_search, tab_add, tab_add_job = st.tabs(["Search", "Add Resume", "Add Job"])
 
 # ── Tab 1: Search ──
 with tab_search:
@@ -284,6 +297,41 @@ with tab_add:
 
             st.success(f"Resume submitted successfully! (ID: {resume_id})")
             st.markdown("Your resume is now searchable by recruiters.")
+
+# ── Tab 3: Add Job ──
+with tab_add_job:
+    st.subheader("Post a Job Description")
+    st.caption("Fill in the job details below. The posting will be saved and immediately searchable by candidates.")
+
+    with st.form("add_job_form", clear_on_submit=True):
+        aj_title = st.text_input("Job Title *", placeholder="e.g. Senior Python Developer")
+        aj_description = st.text_area(
+            "Job Description *",
+            placeholder="Describe the role, responsibilities, requirements, salary, benefits...",
+            height=250,
+        )
+
+        job_submitted = st.form_submit_button("Post Job", type="primary")
+
+    if job_submitted:
+        if not aj_title.strip():
+            st.error("Job title is required.")
+        elif not aj_description.strip():
+            st.error("Job description is required.")
+        else:
+            job_id = _next_job_id()
+            job = {
+                "job_id": job_id,
+                "Job Title": aj_title.strip(),
+                "Job Description": aj_description.strip(),
+            }
+
+            with st.spinner("Saving and indexing job posting..."):
+                retriever = load_retriever()
+                retriever.add_job(job)
+
+            st.success(f"Job posted successfully! (ID: {job_id})")
+            st.markdown("This job is now searchable by candidates.")
 
 # Sidebar: Ablation study
 with st.sidebar:

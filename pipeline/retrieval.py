@@ -141,6 +141,47 @@ class HybridRetriever:
 
         return resume_id
 
+    def add_job(self, job: dict) -> str:
+        """Save a new job to CSV, embed, upsert to Pinecone, update BM25."""
+        from pipeline.ingest import build_job_metadata
+
+        job_id = str(job["job_id"])
+
+        # 1. Append to CSV file
+        with open("data/job_title_des.csv", "a", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "",  # index column
+                job.get("Job Title", ""),
+                job.get("Job Description", ""),
+            ])
+
+        # 2. Serialize and embed
+        text = serialize_job(job)
+        embedding = self.embedding_model.encode(
+            text, normalize_embeddings=True
+        ).tolist()
+
+        # 3. Upsert to Pinecone
+        metadata = build_job_metadata(job, text)
+        self.job_index.upsert(vectors=[{
+            "id": job_id,
+            "values": embedding,
+            "metadata": metadata,
+        }])
+
+        # 4. Update in-memory state
+        self._job_lookup[job_id] = job
+        self._job_ids.append(job_id)
+        self._job_texts.append(text)
+
+        # 5. Rebuild BM25 index with new entry
+        self._bm25_jobs = BM25Okapi(
+            [t.lower().split() for t in self._job_texts]
+        )
+
+        return job_id
+
     def _semantic_search(self, query_vector: list, mode: SearchMode) -> list[dict]:
         index = self.candidate_index if mode == "candidate" else self.job_index
         response = index.query(vector=query_vector, top_k=self.top_k, include_metadata=True)
