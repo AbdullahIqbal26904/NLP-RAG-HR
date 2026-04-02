@@ -105,9 +105,41 @@ class HybridRetriever:
                 r["original"] = original
         return results
 
-        raise ValueError(
-            f"Unknown strategy '{strategy}'. Use one of: semantic_only, hybrid_rrf, hybrid_rrf_ce"
+    def add_resume(self, resume: dict) -> str:
+        """Save a new resume to JSONL, embed, upsert to Pinecone, update BM25."""
+        from pipeline.ingest import build_candidate_metadata
+
+        resume_id = str(resume["ResumeID"])
+
+        # 1. Append to JSONL file
+        with open("data/resumes_dataset.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(resume, ensure_ascii=False) + "\n")
+
+        # 2. Serialize and embed
+        text = serialize_candidate(resume)
+        embedding = self.embedding_model.encode(
+            text, normalize_embeddings=True
+        ).tolist()
+
+        # 3. Upsert to Pinecone
+        metadata = build_candidate_metadata(resume, text)
+        self.candidate_index.upsert(vectors=[{
+            "id": resume_id,
+            "values": embedding,
+            "metadata": metadata,
+        }])
+
+        # 4. Update in-memory state
+        self._candidate_lookup[resume_id] = resume
+        self._candidate_ids.append(resume_id)
+        self._candidate_texts.append(text)
+
+        # 5. Rebuild BM25 index with new entry
+        self._bm25_candidates = BM25Okapi(
+            [t.lower().split() for t in self._candidate_texts]
         )
+
+        return resume_id
 
     def _semantic_search(self, query_vector: list, mode: SearchMode) -> list[dict]:
         index = self.candidate_index if mode == "candidate" else self.job_index
