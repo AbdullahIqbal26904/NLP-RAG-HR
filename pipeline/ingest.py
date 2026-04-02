@@ -1,7 +1,8 @@
 """
-Ingest: Load JSON -> Serialize -> Embed -> Upsert to Pinecone.
+Ingest: Load CSV/JSONL -> Serialize -> Embed -> Upsert to Pinecone.
 Run: python -m pipeline.ingest
 """
+import csv
 import json
 import os
 
@@ -17,6 +18,30 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM
 CANDIDATE_INDEX = os.getenv("PINECONE_CANDIDATE_INDEX", "vend-candidates")
 JOB_INDEX = os.getenv("PINECONE_JOB_INDEX", "vend-jobs")
 BATCH_SIZE = 50
+
+
+def load_resumes(path: str = "data/resumes_dataset.jsonl") -> list[dict]:
+    """Load resumes from JSONL file."""
+    resumes = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                resumes.append(json.loads(line))
+    print(f"Loaded {len(resumes)} resumes from {path}")
+    return resumes
+
+
+def load_jobs(path: str = "data/job_title_des.csv") -> list[dict]:
+    """Load job descriptions from CSV file."""
+    jobs = []
+    with open(path, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            row["job_id"] = f"JOB_{i:05d}"
+            jobs.append(row)
+    print(f"Loaded {len(jobs)} jobs from {path}")
+    return jobs
 
 
 def get_or_create_index(pc: Pinecone, index_name: str, dimension: int):
@@ -35,36 +60,25 @@ def get_or_create_index(pc: Pinecone, index_name: str, dimension: int):
 
 
 def build_candidate_metadata(record: dict, text: str) -> dict:
-    skills = [s.get('skill_name') or '' for s in (record.get('skills') or [])]
+    skills_raw = record.get("Skills") or ""
+    skills = [s.strip() for s in skills_raw.split(",") if s.strip()]
     return {
         "type": "candidate",
-        "candidate_id": record.get('candidate_id'),
-        "name": f"{record.get('first_name') or ''} {record.get('last_name') or ''}".strip(),
-        "current_role": record.get('current_role') or '',
-        "industry": record.get('associated_industry') or '',
-        "years_experience": record.get('years_experience') or 0,
-        "city": record.get('city') or '',
-        "country": record.get('country') or '',
+        "resume_id": record.get("ResumeID") or "",
+        "name": record.get("Name") or "",
+        "category": record.get("Category") or "",
+        "location": record.get("Location") or "",
         "skills": skills[:20],
+        "education": (record.get("Education") or "")[:500],
         "text": text[:4000],
     }
 
 
 def build_job_metadata(record: dict, text: str) -> dict:
-    required_skills = [
-        s.get('skill_name') or ''
-        for s in (record.get('skills') or [])
-        if s.get('is_required')
-    ]
     return {
         "type": "job",
-        "job_id": record.get('job_id'),
-        "job_title": record.get('job_title') or '',
-        "industry": record.get('industry') or '',
-        "employment_type": record.get('employment_type') or '',
-        "min_years_experience": record.get('min_years_experience') or 0,
-        "max_years_experience": record.get('max_years_experience') or 0,
-        "required_skills": required_skills[:20],
+        "job_id": record.get("job_id") or "",
+        "job_title": record.get("Job Title") or "",
         "text": text[:4000],
     }
 
@@ -115,23 +129,23 @@ def main():
     clear_index(pc, CANDIDATE_INDEX)
     clear_index(pc, JOB_INDEX)
 
-    with open("data/candidates.json", encoding="utf-8") as f:
-        candidates = json.load(f)
-
-    print(f"\n--- Ingesting {len(candidates)} candidates ---")
+    # Ingest resumes
+    resumes = load_resumes()
+    print(f"\n--- Ingesting {len(resumes)} resumes ---")
     cand_index = get_or_create_index(pc, CANDIDATE_INDEX, dimension)
-    embed_and_upsert(cand_index, candidates, serialize_candidate, "candidate_id", build_candidate_metadata, model)
+    embed_and_upsert(
+        cand_index, resumes, serialize_candidate, "ResumeID",
+        build_candidate_metadata, model,
+    )
 
-    # Ingest jobs if available
-    jobs_path = "data/jobs.json"
-    if os.path.exists(jobs_path):
-        with open(jobs_path, encoding="utf-8") as f:
-            jobs = json.load(f)
-        print(f"\n--- Ingesting {len(jobs)} jobs ---")
-        job_index = get_or_create_index(pc, JOB_INDEX, dimension)
-        embed_and_upsert(job_index, jobs, serialize_job, "job_id", build_job_metadata, model)
-    else:
-        print("\nNo jobs.json found, skipping job ingestion")
+    # Ingest jobs
+    jobs = load_jobs()
+    print(f"\n--- Ingesting {len(jobs)} jobs ---")
+    job_index = get_or_create_index(pc, JOB_INDEX, dimension)
+    embed_and_upsert(
+        job_index, jobs, serialize_job, "job_id",
+        build_job_metadata, model,
+    )
 
     print("\nIngestion complete")
 

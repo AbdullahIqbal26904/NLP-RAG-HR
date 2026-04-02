@@ -1,4 +1,4 @@
-"""LLM generation via HuggingFace Inference API."""
+"""LLM generation via HuggingFace Inference API with Groq fallback."""
 import json
 import os
 
@@ -7,6 +7,8 @@ from huggingface_hub import InferenceClient
 import requests
 
 load_dotenv()
+
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 
 def _get_client() -> InferenceClient:
@@ -33,7 +35,6 @@ def _extract_generated_text(payload) -> str:
                 if isinstance(message, dict):
                     if isinstance(message.get("content"), str) and message.get("content").strip():
                         return message["content"]
-                    # Some provider backends return reasoning separately from content.
                     if isinstance(message.get("reasoning"), str) and message.get("reasoning").strip():
                         return message["reasoning"]
     if isinstance(payload, list) and payload:
@@ -161,8 +162,36 @@ Based only on the jobs above:
 Do not fabricate information not present in the job postings."""
 
 
+def _groq_generate(prompt: str, max_tokens: int, temperature: float) -> str:
+    """Generate text using Groq API (OpenAI-compatible)."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is not set")
+
+    response = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": GROQ_MODEL,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+        },
+        timeout=120,
+    )
+    if response.status_code >= 400:
+        raise RuntimeError(f"Groq request failed: {response.status_code} {response.text}")
+
+    return _extract_generated_text(response.json()).strip()
+
+
 def generate_answer(prompt: str, max_tokens: int = 512) -> str:
     formatted_prompt = f"[INST] {prompt} [/INST]"
+
+    # Primary: HuggingFace text_generation (free)
     client = _get_client()
     try:
         response = client.text_generation(
@@ -174,13 +203,22 @@ def generate_answer(prompt: str, max_tokens: int = 512) -> str:
         )
         return response.strip()
     except Exception:
-        try:
-            return _router_text_generation(
-                formatted_prompt,
-                max_tokens=max_tokens,
-                temperature=0.3,
-                repetition_penalty=1.1,
-                do_sample=True,
-            )
-        except Exception:
-            return _heuristic_answer_from_prompt(prompt)
+        pass
+
+    # Fallback 1: HuggingFace router
+    try:
+        return _router_text_generation(
+            formatted_prompt,
+            max_tokens=max_tokens,
+            temperature=0.3,
+            repetition_penalty=1.1,
+            do_sample=True,
+        )
+    except Exception:
+        pass
+
+    # Fallback 2: Groq
+    try:
+        return _groq_generate(prompt, max_tokens=max_tokens, temperature=0.3)
+    except Exception:
+        return _heuristic_answer_from_prompt(prompt)

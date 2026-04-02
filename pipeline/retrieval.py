@@ -1,6 +1,7 @@
 """
 Hybrid retrieval: BM25 + Semantic -> RRF -> CrossEncoder re-ranking.
 """
+import csv
 import json
 import os
 from typing import Literal
@@ -18,6 +19,26 @@ load_dotenv()
 SearchMode = Literal["candidate", "job"]
 
 
+def _load_resumes(path: str = "data/resumes_dataset.jsonl") -> list[dict]:
+    resumes = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                resumes.append(json.loads(line))
+    return resumes
+
+
+def _load_jobs(path: str = "data/job_title_des.csv") -> list[dict]:
+    jobs = []
+    with open(path, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            row["job_id"] = f"JOB_{i:05d}"
+            jobs.append(row)
+    return jobs
+
+
 class HybridRetriever:
     def __init__(self):
         self.embedding_model = SentenceTransformer(
@@ -29,17 +50,16 @@ class HybridRetriever:
         self.candidate_index = pc.Index(os.getenv("PINECONE_CANDIDATE_INDEX", "vend-candidates"))
         self.job_index = pc.Index(os.getenv("PINECONE_JOB_INDEX", "vend-jobs"))
 
-        with open("data/candidates.json", encoding="utf-8") as f:
-            candidates = json.load(f)
+        resumes = _load_resumes()
+        jobs = _load_jobs()
 
-        jobs = []
-        if os.path.exists("data/jobs.json"):
-            with open("data/jobs.json", encoding="utf-8") as f:
-                jobs = json.load(f)
+        # Full original records keyed by ID for dashboard display
+        self._candidate_lookup = {str(r["ResumeID"]): r for r in resumes}
+        self._job_lookup = {str(j["job_id"]): j for j in jobs}
 
-        self._candidate_ids = [str(c["candidate_id"]) for c in candidates]
+        self._candidate_ids = [str(r["ResumeID"]) for r in resumes]
         self._job_ids = [str(j["job_id"]) for j in jobs]
-        self._candidate_texts = [serialize_candidate(c) for c in candidates]
+        self._candidate_texts = [serialize_candidate(r) for r in resumes]
         self._job_texts = [serialize_job(j) for j in jobs]
 
         self._bm25_candidates = BM25Okapi([t.lower().split() for t in self._candidate_texts])
@@ -61,7 +81,7 @@ class HybridRetriever:
                 doc.setdefault("rrf_score", 0.0)
                 doc.setdefault("cross_encoder_score", 0.0)
                 doc["final_rank"] = i
-            return ranked
+            return self._enrich_results(ranked, mode)
 
         fused = self._rrf_fusion(semantic, bm25)
 
@@ -70,11 +90,20 @@ class HybridRetriever:
             for i, doc in enumerate(ranked, 1):
                 doc.setdefault("cross_encoder_score", 0.0)
                 doc["final_rank"] = i
-            return ranked
+            return self._enrich_results(ranked, mode)
 
         if strategy == "hybrid_rrf_ce":
             reranked = self._cross_encoder_rerank(query, fused)
-            return reranked[:self.top_k_final]
+            return self._enrich_results(reranked[:self.top_k_final], mode)
+
+    def _enrich_results(self, results: list[dict], mode: SearchMode) -> list[dict]:
+        """Attach the full original record from the data files to each result."""
+        lookup = self._candidate_lookup if mode == "candidate" else self._job_lookup
+        for r in results:
+            original = lookup.get(r["id"])
+            if original:
+                r["original"] = original
+        return results
 
         raise ValueError(
             f"Unknown strategy '{strategy}'. Use one of: semantic_only, hybrid_rrf, hybrid_rrf_ce"

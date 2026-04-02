@@ -5,19 +5,16 @@ import re
 
 import numpy as np
 from dotenv import load_dotenv
-from huggingface_hub import InferenceClient
 import requests
 from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
 
 class RAGEvaluator:
     def __init__(self):
-        self.llm = InferenceClient(
-            model=os.getenv("HF_MODEL_ID", "mistralai/Mistral-7B-Instruct-v0.2"),
-            token=os.getenv("HF_API_TOKEN"),
-        )
         self.embedder = SentenceTransformer(
             os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
         )
@@ -100,86 +97,75 @@ ANSWER: {answer}""",
         }
 
     def _call_llm(self, prompt: str, max_tokens: int = 256) -> str:
-        formatted_prompt = f"[INST] {prompt} [/INST]"
+        # Primary: HuggingFace (free)
         try:
-            return self.llm.text_generation(
-                formatted_prompt,
-                max_new_tokens=max_tokens,
-                temperature=0.1,
-                do_sample=False,
-            ).strip()
+            return self._hf_generate(prompt, max_tokens=max_tokens)
         except Exception:
-            try:
-                return self._router_text_generation(
-                    formatted_prompt,
-                    max_tokens=max_tokens,
-                    temperature=0.1,
-                    do_sample=False,
-                )
-            except Exception:
-                return self._heuristic_llm_response(prompt)
+            pass
+        # Fallback 1: Groq
+        try:
+            return self._groq_generate(prompt, max_tokens=max_tokens)
+        except Exception:
+            return self._heuristic_llm_response(prompt)
 
-    def _router_text_generation(
-        self,
-        prompt: str,
-        max_tokens: int,
-        temperature: float,
-        do_sample: bool,
-    ) -> str:
-        model_id = os.getenv("HF_MODEL_ID", "mistralai/Mistral-7B-Instruct-v0.2")
+    @staticmethod
+    def _hf_generate(prompt: str, max_tokens: int = 256) -> str:
         token = os.getenv("HF_API_TOKEN")
+        model_id = os.getenv("HF_MODEL_ID", "mistralai/Mistral-7B-Instruct-v0.2")
         if not token:
             raise ValueError("HF_API_TOKEN is not set")
 
-        url = "https://router.huggingface.co/v1/chat/completions"
-        payload = {
-            "model": model_id,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-        }
-
         response = requests.post(
-            url,
+            "https://router.huggingface.co/v1/chat/completions",
             headers={
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",
             },
-            json=payload,
+            json={
+                "model": model_id,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": 0.1,
+            },
             timeout=120,
         )
         if response.status_code >= 400:
-            raise RuntimeError(f"HF router request failed: {response.status_code} {response.text}")
+            raise RuntimeError(f"HF request failed: {response.status_code} {response.text}")
 
-        try:
-            parsed = response.json()
-        except json.JSONDecodeError:
-            return response.text.strip()
-
-        return self._extract_generated_text(parsed).strip()
+        parsed = response.json()
+        choices = parsed.get("choices", [])
+        if choices:
+            return choices[0].get("message", {}).get("content", "").strip()
+        return str(parsed)
 
     @staticmethod
-    def _extract_generated_text(payload) -> str:
-        if isinstance(payload, str):
-            return payload
-        if isinstance(payload, dict):
-            if isinstance(payload.get("generated_text"), str):
-                return payload["generated_text"]
-            choices = payload.get("choices")
-            if isinstance(choices, list) and choices:
-                choice = choices[0]
-                if isinstance(choice, dict):
-                    text = choice.get("text")
-                    if isinstance(text, str):
-                        return text
-                    message = choice.get("message")
-                    if isinstance(message, dict) and isinstance(message.get("content"), str):
-                        return message["content"]
-        if isinstance(payload, list) and payload:
-            first = payload[0]
-            if isinstance(first, dict) and isinstance(first.get("generated_text"), str):
-                return first["generated_text"]
-        return str(payload)
+    def _groq_generate(prompt: str, max_tokens: int = 256) -> str:
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise ValueError("GROQ_API_KEY is not set")
+
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": GROQ_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": 0.1,
+            },
+            timeout=120,
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(f"Groq request failed: {response.status_code} {response.text}")
+
+        parsed = response.json()
+        choices = parsed.get("choices", [])
+        if choices:
+            return choices[0].get("message", {}).get("content", "").strip()
+        return str(parsed)
 
     def _heuristic_llm_response(self, prompt: str) -> str:
         lower = prompt.lower()
@@ -239,24 +225,24 @@ ANSWER: {answer}""",
         return "[]"
 
 
-# Fixed test set
+# Fixed test set - queries aligned with resume/job dataset categories
 TEST_QUERIES_RECRUITER = [
-    "Looking for a Python backend developer with FastAPI and PostgreSQL, 3+ years",
-    "Need a React frontend developer with TypeScript experience",
-    "Seeking a DevOps engineer with Docker and Kubernetes skills",
-    "Looking for a data scientist with machine learning and Python expertise",
-    "Need a full stack developer with Node.js and React, 2+ years",
-    "Seeking a mobile developer with Flutter or React Native",
-    "Looking for a project manager with Agile and Scrum certification",
-    "Need a cloud architect with AWS or Azure, 5+ years",
-    "Seeking a UI/UX designer with Figma and user research skills",
-    "Looking for a cybersecurity analyst with penetration testing experience",
+    "Looking for a Java developer with Spring Boot and microservices experience",
+    "Need a Python developer with machine learning and data science skills",
+    "Seeking a DevOps engineer with AWS, Docker, and Kubernetes experience",
+    "Looking for a backend developer with Node.js and database management skills",
+    "Need a full-stack developer with React and Django experience",
+    "Seeking a database administrator with SQL and performance tuning skills",
+    "Looking for a cybersecurity analyst with network security experience",
+    "Need a cloud engineer with Azure or AWS certification",
+    "Seeking a blockchain developer with smart contract development skills",
+    "Looking for a data scientist with deep learning and NLP experience",
 ]
 
 TEST_QUERIES_CANDIDATE = [
-    "I have 4 years Python experience, Django and FastAPI, looking for backend roles",
-    "React developer with 3 years experience, TypeScript and Next.js",
-    "DevOps engineer, 2 years with Docker, CI/CD, AWS",
-    "Data scientist with scikit-learn, pandas, 2 years ML experience",
-    "Full stack developer, Node.js backend, React frontend, 3 years total",
+    "I have 5 years Java development experience with Spring Boot and AWS, looking for senior roles",
+    "Python developer with 3 years in machine learning and data analysis seeking ML engineer positions",
+    "DevOps professional with Docker, Kubernetes, and CI/CD pipeline expertise looking for opportunities",
+    "Full-stack developer with React, Node.js, and PostgreSQL skills seeking remote positions",
+    "Database administrator with 4 years Oracle and MySQL experience looking for DBA roles",
 ]

@@ -33,7 +33,7 @@ dist/
 .streamlit/secrets.toml
 
 # Keep only exported JSON data in Git
-data/*
-!data/candidates.json
+# data/*
+# !data/candidates.json
 # !data/jobs.json
 

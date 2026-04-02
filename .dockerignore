@@ -9,7 +9,7 @@ __pycache__/
 .env
 .vscode/
 
-# Keep only exported JSONs from data for container context
+# Keep only dataset files from data for container context
 data/*
-!data/candidates.json
-!data/jobs.json
+!data/resumes_dataset.jsonl
+!data/job_title_des.csv

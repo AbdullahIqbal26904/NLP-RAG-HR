@@ -55,13 +55,13 @@ def load_ablation_table() -> pd.DataFrame:
 
 
 # Header
-st.title("🎯 VenD - AI Talent Matching RAG")
-st.caption("Hybrid BM25 + Semantic Search -> RRF -> CrossEncoder Re-ranking -> Mistral-7B")
+st.title("AI Talent Matching RAG")
+st.caption("Hybrid BM25 + Semantic Search -> RRF -> CrossEncoder Re-ranking -> LLM Generation")
 
 # Mode selector
 mode = st.radio(
     "Search Mode",
-    ["🏢 Recruiter - Find Candidates", "👤 Candidate - Find Jobs"],
+    ["Recruiter - Find Candidates", "Candidate - Find Jobs"],
     horizontal=True,
 )
 is_recruiter = "Recruiter" in mode
@@ -75,7 +75,7 @@ query = st.text_area("Query:", placeholder=placeholder, height=90)
 
 col1, col2 = st.columns([1, 5])
 with col1:
-    search = st.button("🔍 Search", type="primary", use_container_width=True)
+    search = st.button("Search", type="primary", use_container_width=True)
 with col2:
     show_eval = st.checkbox("Show Faithfulness + Relevancy scores", value=False)
 
@@ -93,22 +93,28 @@ if search and query.strip():
 
     context_text = "\n\n".join(r.get("text", "")[:500] for r in results)
 
-    with st.spinner("Generating answer with Mistral-7B..."):
+    with st.spinner("Generating answer with LLM..."):
         prompt = build_recruiter_prompt(query, results) if is_recruiter else build_candidate_prompt(query, results)
         answer = generate_answer(prompt)
 
     # Generated answer
-    st.subheader("💡 Generated Answer")
+    st.subheader("Generated Answer")
     st.markdown(answer)
     st.divider()
 
     # Retrieved context
-    st.subheader(f"📄 Retrieved Context - {len(results)} results")
+    st.subheader(f"Retrieved Context - {len(results)} results")
     for i, r in enumerate(results, 1):
+        orig = r.get("original", {})
         meta = r.get("metadata", {})
-        title = meta.get("name") or meta.get("job_title") or f"Result {i}"
-        subtitle = meta.get("current_role") or meta.get("industry") or ""
-        skills = meta.get("skills") or meta.get("required_skills") or []
+
+        # Use full original data for display, fall back to metadata
+        if is_recruiter:
+            title = orig.get("Name") or meta.get("name") or f"Result {i}"
+            subtitle = orig.get("Category") or meta.get("category") or ""
+        else:
+            title = orig.get("Job Title") or meta.get("job_title") or f"Result {i}"
+            subtitle = ""
 
         with st.expander(
             f"#{r.get('final_rank', i)} {title} | {subtitle} - "
@@ -117,19 +123,49 @@ if search and query.strip():
             f"BM25: {r.get('bm25_score', 0):.2f} | "
             f"RRF: {r.get('rrf_score', 0):.4f}"
         ):
+            # Scores row
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("CrossEncoder", f"{r.get('cross_encoder_score', 0):.3f}")
             c2.metric("Semantic", f"{r.get('semantic_score', 0):.3f}")
             c3.metric("BM25", f"{r.get('bm25_score', 0):.2f}")
             c4.metric("RRF", f"{r.get('rrf_score', 0):.4f}")
-            if skills:
-                st.markdown(f"**Skills:** {', '.join(skills[:10])}")
-            st.text(r.get("text", "")[:800])
+
+            if orig and is_recruiter:
+                # Full resume details from original data
+                st.markdown(f"**Name:** {orig.get('Name', 'N/A')}")
+                st.markdown(f"**Category:** {orig.get('Category', 'N/A')}")
+                st.markdown(f"**Location:** {orig.get('Location', 'N/A')}")
+                st.markdown(f"**Email:** {orig.get('Email', 'N/A')}")
+                st.markdown(f"**Skills:** {orig.get('Skills', 'N/A')}")
+                st.markdown(f"**Education:** {orig.get('Education', 'N/A')}")
+                summary = orig.get("Summary") or ""
+                if summary:
+                    st.markdown("**Summary:**")
+                    st.text(summary[:1000])
+                experience = orig.get("Experience") or ""
+                if experience:
+                    st.markdown("**Experience:**")
+                    st.text(experience[:2000])
+
+            elif orig and not is_recruiter:
+                # Full job details from original data
+                st.markdown(f"**Job Title:** {orig.get('Job Title', 'N/A')}")
+                description = orig.get("Job Description") or ""
+                if description:
+                    st.markdown("**Job Description:**")
+                    st.text(description)
+
+            else:
+                # Fallback to serialized text
+                skills = meta.get("skills") or []
+                if skills:
+                    st.markdown(f"**Skills:** {', '.join(skills[:10])}")
+                st.text(r.get("text", "")[:800])
 
     # Evaluation
     if show_eval:
         st.divider()
-        st.subheader("🧪 LLM-as-a-Judge Evaluation")
+        st.subheader("LLM-as-a-Judge Evaluation")
         with st.spinner("Evaluating..."):
             evaluator = load_evaluator()
             ev = evaluator.evaluate(query, answer, context_text)
@@ -139,8 +175,8 @@ if search and query.strip():
             st.metric("Faithfulness", f"{ev['faithfulness_score']:.1%}")
             st.markdown("**Claims:**")
             for v in ev.get("verified_claims", [])[:5]:
-                icon = "✅" if v["supported"] else "❌"
-                st.markdown(f"{icon} {v['claim']}")
+                icon = "supported" if v["supported"] else "not supported"
+                st.markdown(f"[{icon}] {v['claim']}")
                 if v.get("reason"):
                     st.caption(v["reason"])
         with ec2:
@@ -152,7 +188,7 @@ if search and query.strip():
 
 # Sidebar: Ablation study
 with st.sidebar:
-    st.header("📊 Ablation Study")
+    st.header("Ablation Study")
     ablation = load_ablation_table()
     st.dataframe(ablation, use_container_width=True, hide_index=True)
     st.divider()

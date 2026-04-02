@@ -6,6 +6,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import re
@@ -348,14 +349,19 @@ class LocalChunkRetriever:
 
 
 def _build_chunk_dataset(chunking: str) -> list[dict]:
-    with open("data/candidates.json", encoding="utf-8") as f:
-        candidates = json.load(f)
+    """Build chunked dataset from resumes for chunking ablation."""
+    resumes = []
+    with open("data/resumes_dataset.jsonl", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                resumes.append(json.loads(line))
 
     chunks: list[dict] = []
-    for c in candidates:
-        cid = str(c.get("candidate_id"))
-        name = f"{c.get('first_name') or ''} {c.get('last_name') or ''}".strip() or cid
-        text = serialize_candidate(c)
+    for r in resumes:
+        rid = str(r.get("ResumeID", ""))
+        name = r.get("Name") or rid
+        text = serialize_candidate(r)
 
         if chunking == "fixed":
             pieces = _fixed_chunks(text)
@@ -367,8 +373,8 @@ def _build_chunk_dataset(chunking: str) -> list[dict]:
         for i, piece in enumerate(pieces, 1):
             chunks.append(
                 {
-                    "id": f"{cid}_{i}",
-                    "source_id": cid,
+                    "id": f"{rid}_{i}",
+                    "source_id": rid,
                     "name": name,
                     "chunking": chunking,
                     "text": piece,
@@ -434,8 +440,6 @@ def run_chunking_ablation(
 
 
 def _write_ablation_csv(path: Path, retrieval_ablation: dict, chunking_ablation: dict):
-    import csv
-
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
