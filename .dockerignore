@@ -10,7 +10,8 @@ __pycache__/
 .env.*
 !.env.example
 .vscode/
-reports/
+reports/*
+!reports/ablation_summary.csv
 generate_report.py
 docker-compose.prod.yml
 

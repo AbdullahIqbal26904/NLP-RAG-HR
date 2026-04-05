@@ -25,6 +25,7 @@ COPY data/job_title_des.csv ./data/job_title_des.csv
 COPY data/resumes_urdu.jsonl ./data/resumes_urdu.jsonl
 COPY data/jobs_urdu.csv ./data/jobs_urdu.csv
 COPY README.md ./README.md
+COPY reports/ablation_summary.csv ./reports/ablation_summary.csv
 
 # Streamlit config for production
 RUN mkdir -p /app/.streamlit

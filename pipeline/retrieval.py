@@ -259,21 +259,36 @@ class HybridRetriever:
 
 # ── Urdu Hybrid Retriever ──
 
-def _load_resumes_urdu(path: str = "data/resumes_urdu.jsonl") -> list[dict]:
-    resumes = []
+def _load_resumes_urdu(
+    path: str = "data/resumes_urdu.jsonl", max_records: int = 80,
+) -> list[dict]:
+    all_resumes = []
     with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
-                resumes.append(json.loads(line))
-    return resumes
+                all_resumes.append(json.loads(line))
+    # Sample evenly across categories (same logic as ingest)
+    by_cat: dict[str, list] = {}
+    for r in all_resumes:
+        cat = r.get("category") or "Other"
+        by_cat.setdefault(cat, []).append(r)
+    sampled = []
+    per_cat = max(1, max_records // len(by_cat)) if by_cat else max_records
+    for cat in sorted(by_cat):
+        sampled.extend(by_cat[cat][:per_cat])
+    return sampled[:max_records]
 
 
-def _load_jobs_urdu(path: str = "data/jobs_urdu.csv") -> list[dict]:
+def _load_jobs_urdu(
+    path: str = "data/jobs_urdu.csv", max_records: int = 40,
+) -> list[dict]:
     jobs = []
     with open(path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for i, row in enumerate(reader):
+            if i >= max_records:
+                break
             row["job_id"] = f"UJOB_{i:05d}"
             jobs.append(row)
     return jobs

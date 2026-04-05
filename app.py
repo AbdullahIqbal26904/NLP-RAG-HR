@@ -117,11 +117,12 @@ def load_ablation_table() -> pd.DataFrame:
                 "Semantic only",
                 "Hybrid + RRF",
                 "Hybrid + RRF + CE",
-                "Chunking: Fixed (Hybrid + RRF + CE)",
-                "Chunking: Recursive (Hybrid + RRF + CE)",
+                "Fixed Chunking",
+                "Recursive Chunking",
             ],
-            "Faithfulness": [0.0, 0.0, 0.0, 0.0, 0.0],
-            "Relevancy": [0.0, 0.0, 0.0, 0.0, 0.0],
+            "Faithfulness": ["33.3%", "50.0%", "16.7%", "75.0%", "25.0%"],
+            "Relevancy": ["4.5%", "4.5%", "35.9%", "2.9%", "22.0%"],
+            "Latency (s)": ["5.10", "4.85", "7.61", "8.16", "8.90"],
         }
     )
 
@@ -141,6 +142,59 @@ if is_urdu:
 else:
     st.title("AI Talent Matching RAG")
     st.caption("Hybrid BM25 + Semantic Search -> RRF -> CrossEncoder Re-ranking -> LLM Generation")
+
+# ── User Guide ──
+if is_urdu:
+    with st.expander("اس ایپ کو کیسے استعمال کریں؟", expanded=False):
+        st.markdown("""
+**یہ ایپ کیا ہے؟**
+
+یہ ایک AI سے چلنے والا ٹیلنٹ میچنگ سسٹم ہے جو RAG (Retrieval-Augmented Generation) ٹیکنالوجی استعمال کرتا ہے۔
+یہ بھرتی کرنے والوں کو مناسب امیدوار تلاش کرنے اور امیدواروں کو مناسب ملازمتیں تلاش کرنے میں مدد کرتا ہے۔
+
+**استعمال کا طریقہ:**
+
+1. **تلاش کا طریقہ منتخب کریں** - بھرتی کار (امیدوار تلاش) یا امیدوار (ملازمت تلاش)
+2. **اپنا سوال لکھیں** - اردو میں اپنی ضرورت بیان کریں
+3. **تلاش کریں** بٹن دبائیں
+4. **نتائج دیکھیں** - AI جواب اور حاصل شدہ دستاویزات نظر آئیں گے
+
+**تشخیص:** "وفاداری اور مطابقت کے اسکور دکھائیں" کو فعال کریں تاکہ جواب کی درستگی کا جائزہ لیا جا سکے۔
+
+**یہ کیسے کام کرتا ہے؟**
+- BM25 (کلیدی لفظ) + سیمانٹک (معنوی) سرچ ایک ساتھ چلتی ہیں
+- RRF فیوژن دونوں نتائج کو ملاتا ہے
+- CrossEncoder ری رینکنگ سب سے مناسب نتائج کو اوپر لاتا ہے
+- LLM حاصل شدہ سیاق و سباق سے جواب تیار کرتا ہے
+""")
+else:
+    with st.expander("How to use this app?", expanded=False):
+        st.markdown("""
+**What is this app?**
+
+This is an AI-powered Talent Matching system built using RAG (Retrieval-Augmented Generation) technology.
+It helps **recruiters** find the best candidates for a role, and helps **job seekers** discover relevant job opportunities.
+
+**How to use it:**
+
+1. **Pick a search mode** -- "Recruiter" to find candidates, or "Candidate" to find jobs
+2. **Type your query** -- describe what you're looking for in natural language
+3. **Click Search** -- the system retrieves, re-ranks, and generates an answer
+4. **Explore results** -- expand each result card to see full details and retrieval scores
+
+**Evaluation:** Check "Show Faithfulness + Relevancy scores" to see how well the generated answer is grounded in the retrieved context.
+
+**How it works under the hood:**
+- **BM25** (keyword) and **Semantic** (meaning-based) search run in parallel
+- **RRF Fusion** merges both ranked lists for better recall
+- **CrossEncoder Re-ranking** scores each query-document pair for precision
+- **LLM Generation** produces a human-readable answer from the retrieved context
+
+**Tabs:**
+- **Search** -- main search interface
+- **Add Resume** -- submit your resume to be searchable by recruiters
+- **Add Job** -- post a job description searchable by candidates
+""")
 
 # Main tabs
 if is_urdu:
@@ -488,17 +542,33 @@ if not is_urdu:
 
 # Sidebar: Ablation study & model info
 with st.sidebar:
-    st.header("Ablation Study" if not is_urdu else "ابلیشن اسٹڈی")
-    ablation = load_ablation_table()
-    st.dataframe(ablation, use_container_width=True, hide_index=True)
     st.divider()
+    st.header("Ablation Study" if not is_urdu else "ابلیشن اسٹڈی")
+
+    ablation = load_ablation_table()
+
+    if not is_urdu:
+        st.markdown("**Retrieval Strategy Comparison**")
+        st.caption("Evaluated on 15 test queries (10 recruiter + 5 candidate)")
+    else:
+        st.markdown("**بازیابی حکمت عملی کا موازنہ**")
+
+    st.dataframe(ablation, use_container_width=True, hide_index=True)
+
+    if not is_urdu:
+        st.caption("Best Faithfulness: Hybrid+RRF (50.0%) | Best Relevancy: Hybrid+RRF+CE (35.9%)")
+    else:
+        st.caption("بہترین وفاداری: Hybrid+RRF (50.0%) | بہترین مطابقت: Hybrid+RRF+CE (35.9%)")
+
+    st.divider()
+    st.markdown("**System Configuration**" if not is_urdu else "**سسٹم کنفیگریشن**")
     if is_urdu:
         st.caption("ایمبیڈنگ: paraphrase-multilingual-MiniLM-L12-v2")
         st.caption(f"LLM: {os.getenv('HF_MODEL_ID', 'N/A')}")
         st.caption("ری رینکر: ms-marco-MiniLM-L-6-v2")
         st.caption("ویکٹر ڈی بی: Pinecone Serverless")
     else:
-        st.caption("Embedding: all-MiniLM-L6-v2")
+        st.caption("Embedding: all-MiniLM-L6-v2 (EN) / multilingual-MiniLM-L12-v2 (UR)")
         st.caption(f"LLM: {os.getenv('HF_MODEL_ID', 'N/A')}")
-        st.caption("Re-ranker: ms-marco-MiniLM-L-6-v2")
-        st.caption("Vector DB: Pinecone Serverless")
+        st.caption("Re-ranker: cross-encoder/ms-marco-MiniLM-L-6-v2")
+        st.caption("Vector DB: Pinecone Serverless (4 indexes)")

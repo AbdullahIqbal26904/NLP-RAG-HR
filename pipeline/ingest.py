@@ -178,7 +178,7 @@ def load_jobs_urdu(path: str = "data/jobs_urdu.csv") -> list[dict]:
     return jobs
 
 
-def ingest_urdu():
+def ingest_urdu(max_resumes: int = 40, max_jobs: int = 40):
     """Ingest Urdu data into separate Pinecone indexes with multilingual embeddings."""
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     model = SentenceTransformer(EMBEDDING_MODEL_URDU)
@@ -188,25 +188,35 @@ def ingest_urdu():
     clear_index(pc, URDU_CANDIDATE_INDEX)
     clear_index(pc, URDU_JOB_INDEX)
 
-    # Ingest Urdu resumes
-    resumes = load_resumes_urdu()
-    print(f"\n--- Ingesting {len(resumes)} Urdu resumes ---")
+    # Ingest Urdu resumes (limited, sampled across categories for diversity)
+    all_resumes = load_resumes_urdu()
+    by_cat: dict[str, list] = {}
+    for r in all_resumes:
+        cat = r.get("category") or "Other"
+        by_cat.setdefault(cat, []).append(r)
+    resumes = []
+    per_cat = max(1, max_resumes // len(by_cat)) if by_cat else max_resumes
+    for cat in sorted(by_cat):
+        resumes.extend(by_cat[cat][:per_cat])
+    resumes = resumes[:max_resumes]
+    print(f"Sampled {len(resumes)} resumes across {len(by_cat)} categories")
+    print(f"\n--- Ingesting {len(resumes)} Urdu resumes (limit={max_resumes}) ---")
     cand_index = get_or_create_index(pc, URDU_CANDIDATE_INDEX, dimension)
     embed_and_upsert(
         cand_index, resumes, serialize_candidate_urdu, "id",
         build_candidate_metadata_urdu, model,
     )
 
-    # Ingest Urdu jobs
-    jobs = load_jobs_urdu()
-    print(f"\n--- Ingesting {len(jobs)} Urdu jobs ---")
+    # Ingest Urdu jobs (limited)
+    jobs = load_jobs_urdu()[:max_jobs]
+    print(f"\n--- Ingesting {len(jobs)} Urdu jobs (limit={max_jobs}) ---")
     job_index = get_or_create_index(pc, URDU_JOB_INDEX, dimension)
     embed_and_upsert(
         job_index, jobs, serialize_job_urdu, "job_id",
         build_job_metadata_urdu, model,
     )
 
-    print("\nUrdu ingestion complete")
+    print(f"\nUrdu ingestion complete: {len(resumes)} resumes + {len(jobs)} jobs")
 
 
 def main():
@@ -243,6 +253,8 @@ def main():
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "--urdu":
-        ingest_urdu()
+        max_r = int(sys.argv[2]) if len(sys.argv) > 2 else 40
+        max_j = int(sys.argv[3]) if len(sys.argv) > 3 else 40
+        ingest_urdu(max_resumes=max_r, max_jobs=max_j)
     else:
         main()
