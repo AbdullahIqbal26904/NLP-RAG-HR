@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:8501"
+    env_file:
+      - .env
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+      - st_cache:/root/.cache/torch/sentence_transformers
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 3500M
+
+volumes:
+  hf_cache:
+  st_cache:

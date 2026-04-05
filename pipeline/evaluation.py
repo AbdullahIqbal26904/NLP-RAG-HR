@@ -225,6 +225,197 @@ ANSWER: {answer}""",
         return "[]"
 
 
+class UrduRAGEvaluator:
+    """LLM-as-a-Judge for Urdu using multilingual embeddings and LLM."""
+
+    def __init__(self):
+        self.embedder = SentenceTransformer(
+            os.getenv(
+                "EMBEDDING_MODEL_URDU",
+                "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            )
+        )
+        self.max_claims = int(os.getenv("EVAL_MAX_CLAIMS", "10"))
+
+    def evaluate(self, query: str, answer: str, context: str) -> dict:
+        faith = self._faithfulness(answer, context)
+        rel = self._relevancy(query, answer)
+        return {
+            "faithfulness_score": faith["score"],
+            "relevancy_score": rel["score"],
+            "claims": faith["claims"],
+            "verified_claims": faith["verified"],
+            "generated_questions": rel["questions"],
+            "similarity_scores": rel["similarities"],
+        }
+
+    def _faithfulness(self, answer: str, context: str) -> dict:
+        raw = self._call_llm(
+            f"""اس جواب سے تمام حقائق پر مبنی دعوے نکالیں اور JSON ارے کی صورت میں واپس کریں۔
+صرف JSON ارے واپس کریں، کچھ اور نہیں۔
+
+جواب: {answer}""",
+            max_tokens=300,
+        )
+        try:
+            claims = json.loads(raw[raw.find("[") : raw.rfind("]") + 1])
+        except Exception:
+            claims = [answer[:200]]
+
+        verified = []
+        for claim in claims[: self.max_claims]:
+            raw2 = self._call_llm(
+                f"""کیا یہ دعویٰ سیاق و سباق سے ثابت ہوتا ہے؟ صرف JSON میں جواب دیں: {{"supported": true یا false, "reason": "ایک جملہ"}}
+
+دعویٰ: {claim}
+سیاق و سباق: {context[:800]}""",
+                max_tokens=100,
+            )
+            try:
+                result = json.loads(raw2[raw2.find("{") : raw2.rfind("}") + 1])
+                verified.append(
+                    {
+                        "claim": claim,
+                        "supported": bool(result.get("supported")),
+                        "reason": result.get("reason", ""),
+                    }
+                )
+            except Exception:
+                verified.append(
+                    {"claim": claim, "supported": False, "reason": "parse error"}
+                )
+
+        score = (
+            sum(1 for v in verified if v["supported"]) / len(verified)
+            if verified
+            else 0.0
+        )
+        return {"score": score, "claims": claims, "verified": verified}
+
+    def _relevancy(self, query: str, answer: str) -> dict:
+        raw = self._call_llm(
+            f"""اس جواب سے بالکل 3 سوالات بنائیں جن کا یہ جواب دے رہا ہے۔
+صرف 3 سوالات کی JSON ارے واپس کریں۔
+
+جواب: {answer}""",
+            max_tokens=150,
+        )
+        try:
+            questions = json.loads(raw[raw.find("[") : raw.rfind("]") + 1])[:3]
+        except Exception:
+            questions = [query]
+        while len(questions) < 3:
+            questions.append(query)
+
+        q_emb = self.embedder.encode(query, normalize_embeddings=True)
+        q_embs = self.embedder.encode(questions, normalize_embeddings=True)
+        similarities = [float(np.dot(q_emb, e)) for e in q_embs]
+
+        return {
+            "score": float(np.mean(similarities)),
+            "questions": questions,
+            "similarities": similarities,
+        }
+
+    def _call_llm(self, prompt: str, max_tokens: int = 256) -> str:
+        # Use multilingual model (Qwen) via Groq or HF for Urdu evaluation
+        try:
+            return self._groq_generate(prompt, max_tokens=max_tokens)
+        except Exception:
+            pass
+        try:
+            return self._hf_generate(prompt, max_tokens=max_tokens)
+        except Exception:
+            return self._heuristic_llm_response(prompt)
+
+    @staticmethod
+    def _hf_generate(prompt: str, max_tokens: int = 256) -> str:
+        token = os.getenv("HF_API_TOKEN")
+        # Use a multilingual model for Urdu evaluation
+        model_id = os.getenv(
+            "HF_URDU_MODEL_ID",
+            os.getenv("HF_MODEL_ID", "Qwen/Qwen2.5-72B-Instruct"),
+        )
+        if not token:
+            raise ValueError("HF_API_TOKEN is not set")
+
+        response = requests.post(
+            "https://router.huggingface.co/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model_id,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": 0.1,
+            },
+            timeout=120,
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(
+                f"HF request failed: {response.status_code} {response.text}"
+            )
+
+        parsed = response.json()
+        choices = parsed.get("choices", [])
+        if choices:
+            return choices[0].get("message", {}).get("content", "").strip()
+        return str(parsed)
+
+    @staticmethod
+    def _groq_generate(prompt: str, max_tokens: int = 256) -> str:
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise ValueError("GROQ_API_KEY is not set")
+
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": GROQ_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": max_tokens,
+                "temperature": 0.1,
+            },
+            timeout=120,
+        )
+        if response.status_code >= 400:
+            raise RuntimeError(
+                f"Groq request failed: {response.status_code} {response.text}"
+            )
+
+        parsed = response.json()
+        choices = parsed.get("choices", [])
+        if choices:
+            return choices[0].get("message", {}).get("content", "").strip()
+        return str(parsed)
+
+    def _heuristic_llm_response(self, prompt: str) -> str:
+        lower = prompt.lower()
+
+        if "دعوے نکالیں" in prompt or "extract" in lower:
+            answer = prompt.split("جواب:", 1)[-1].strip() if "جواب:" in prompt else prompt[-300:]
+            sentences = [s.strip() for s in re.split(r"[۔.!?]", answer) if s.strip()]
+            claims = sentences[: max(1, min(self.max_claims, 3))] or [answer[:220]]
+            return json.dumps(claims, ensure_ascii=False)
+
+        if "دعویٰ" in prompt or "supported" in lower:
+            return json.dumps({"supported": False, "reason": "Heuristic fallback"})
+
+        if "سوالات بنائیں" in prompt or "questions" in lower:
+            return json.dumps(
+                ["یہ جواب کس بارے میں ہے؟", "اس میں کون سی مہارتیں بتائی گئی ہیں؟", "کیا تجاویز دی گئی ہیں؟"],
+                ensure_ascii=False,
+            )
+
+        return "[]"
+
+
 # Fixed test set - queries aligned with resume/job dataset categories
 TEST_QUERIES_RECRUITER = [
     "Looking for a Java developer with Spring Boot and microservices experience",

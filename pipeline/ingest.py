@@ -10,13 +10,23 @@ from dotenv import load_dotenv
 from pinecone import Pinecone, ServerlessSpec
 from sentence_transformers import SentenceTransformer
 
-from pipeline.serializer import serialize_candidate, serialize_job
+from pipeline.serializer import (
+    serialize_candidate,
+    serialize_candidate_urdu,
+    serialize_job,
+    serialize_job_urdu,
+)
 
 load_dotenv()
 
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+EMBEDDING_MODEL_URDU = os.getenv(
+    "EMBEDDING_MODEL_URDU", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+)
 CANDIDATE_INDEX = os.getenv("PINECONE_CANDIDATE_INDEX", "vend-candidates")
 JOB_INDEX = os.getenv("PINECONE_JOB_INDEX", "vend-jobs")
+URDU_CANDIDATE_INDEX = os.getenv("PINECONE_URDU_CANDIDATE_INDEX", "urdu-candidates")
+URDU_JOB_INDEX = os.getenv("PINECONE_URDU_JOB_INDEX", "urdu-jobs")
 BATCH_SIZE = 50
 
 
@@ -74,6 +84,31 @@ def build_candidate_metadata(record: dict, text: str) -> dict:
     }
 
 
+def build_candidate_metadata_urdu(record: dict, text: str) -> dict:
+    skills_raw = record.get("skills_urdu") or record.get("skills") or ""
+    skills = [s.strip() for s in skills_raw.split("،") if s.strip()]
+    if not skills:
+        skills = [s.strip() for s in skills_raw.split(",") if s.strip()]
+    return {
+        "type": "candidate",
+        "resume_id": record.get("id") or "",
+        "name": record.get("name") or "",
+        "category": record.get("category_urdu") or record.get("category") or "",
+        "skills": skills[:20],
+        "education": (record.get("education_urdu") or "")[:500],
+        "text": text[:4000],
+    }
+
+
+def build_job_metadata_urdu(record: dict, text: str) -> dict:
+    return {
+        "type": "job",
+        "job_id": record.get("job_id") or "",
+        "job_title": record.get("title_urdu") or record.get("Job Title") or "",
+        "text": text[:4000],
+    }
+
+
 def build_job_metadata(record: dict, text: str) -> dict:
     return {
         "type": "job",
@@ -119,6 +154,61 @@ def clear_index(pc: Pinecone, index_name: str):
         print(f"Index {index_name} does not exist, nothing to clear")
 
 
+def load_resumes_urdu(path: str = "data/resumes_urdu.jsonl") -> list[dict]:
+    """Load Urdu resumes from JSONL file."""
+    resumes = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                resumes.append(json.loads(line))
+    print(f"Loaded {len(resumes)} Urdu resumes from {path}")
+    return resumes
+
+
+def load_jobs_urdu(path: str = "data/jobs_urdu.csv") -> list[dict]:
+    """Load Urdu job descriptions from CSV file."""
+    jobs = []
+    with open(path, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader):
+            row["job_id"] = f"UJOB_{i:05d}"
+            jobs.append(row)
+    print(f"Loaded {len(jobs)} Urdu jobs from {path}")
+    return jobs
+
+
+def ingest_urdu():
+    """Ingest Urdu data into separate Pinecone indexes with multilingual embeddings."""
+    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+    model = SentenceTransformer(EMBEDDING_MODEL_URDU)
+    dimension = model.get_sentence_embedding_dimension()
+
+    print("\n--- Clearing existing Urdu embeddings ---")
+    clear_index(pc, URDU_CANDIDATE_INDEX)
+    clear_index(pc, URDU_JOB_INDEX)
+
+    # Ingest Urdu resumes
+    resumes = load_resumes_urdu()
+    print(f"\n--- Ingesting {len(resumes)} Urdu resumes ---")
+    cand_index = get_or_create_index(pc, URDU_CANDIDATE_INDEX, dimension)
+    embed_and_upsert(
+        cand_index, resumes, serialize_candidate_urdu, "id",
+        build_candidate_metadata_urdu, model,
+    )
+
+    # Ingest Urdu jobs
+    jobs = load_jobs_urdu()
+    print(f"\n--- Ingesting {len(jobs)} Urdu jobs ---")
+    job_index = get_or_create_index(pc, URDU_JOB_INDEX, dimension)
+    embed_and_upsert(
+        job_index, jobs, serialize_job_urdu, "job_id",
+        build_job_metadata_urdu, model,
+    )
+
+    print("\nUrdu ingestion complete")
+
+
 def main():
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     model = SentenceTransformer(EMBEDDING_MODEL)
@@ -151,4 +241,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--urdu":
+        ingest_urdu()
+    else:
+        main()

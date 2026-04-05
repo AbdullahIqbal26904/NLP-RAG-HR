@@ -30,6 +30,47 @@ def serialize_candidate(resume: dict) -> str:
     return "\n".join(parts)
 
 
+def serialize_candidate_urdu(record: dict) -> str:
+    """Serialize an Urdu resume record into text for embedding."""
+    parts = []
+
+    name = record.get("name") or "نامعلوم"
+    category = record.get("category_urdu") or record.get("category") or ""
+    parts.append(f"نام: {name} | زمرہ: {category}")
+
+    skills = record.get("skills_urdu") or record.get("skills") or ""
+    if skills:
+        parts.append(f"\nمہارتیں:\n{skills}")
+
+    summary = record.get("summary_urdu") or ""
+    if summary:
+        parts.append(f"\nخلاصہ:\n{summary}")
+
+    experience = record.get("experience_urdu") or ""
+    if experience:
+        parts.append(f"\nتجربہ:\n{experience[:2000]}")
+
+    education = record.get("education_urdu") or ""
+    if education:
+        parts.append(f"\nتعلیم:\n{education}")
+
+    return "\n".join(parts)
+
+
+def serialize_job_urdu(job: dict) -> str:
+    """Serialize an Urdu job record into text for embedding."""
+    parts = []
+
+    title = job.get("title_urdu") or job.get("Job Title") or "نامعلوم"
+    parts.append(f"عنوان ملازمت: {title}")
+
+    description = job.get("desc_urdu") or job.get("Job Description") or ""
+    if description:
+        parts.append(f"\nتفصیل ملازمت:\n{description[:3000]}")
+
+    return "\n".join(parts)
+
+
 def serialize_job(job: dict) -> str:
     """Serialize a job record from job_title_des.csv into text."""
     parts = []

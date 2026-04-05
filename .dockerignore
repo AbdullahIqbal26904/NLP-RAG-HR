@@ -7,9 +7,16 @@ __pycache__/
 *.pyd
 *.log
 .env
+.env.*
+!.env.example
 .vscode/
+reports/
+generate_report.py
+docker-compose.prod.yml
 
 # Keep only dataset files from data for container context
 data/*
 !data/resumes_dataset.jsonl
 !data/job_title_des.csv
+!data/resumes_urdu.jsonl
+!data/jobs_urdu.csv

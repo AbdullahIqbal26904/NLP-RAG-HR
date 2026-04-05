@@ -162,6 +162,48 @@ Based only on the jobs above:
 Do not fabricate information not present in the job postings."""
 
 
+def build_recruiter_prompt_urdu(query: str, results: list[dict]) -> str:
+    context = "\n\n---\n\n".join(
+        f"امیدوار {i}: {r.get('metadata', {}).get('name', '')}\n{r.get('text', '')[:600]}"
+        for i, r in enumerate(results, 1)
+    )
+    return f"""آپ ایک ماہر بھرتی کار معاون ہیں۔ براہ کرم اردو میں جواب دیں۔
+
+ملازمت کی ضرورت:
+{query}
+
+حاصل شدہ امیدواروں کی تفصیلات:
+{context}
+
+صرف اوپر دی گئی تفصیلات کی بنیاد پر:
+1. سب سے مناسب 3 امیدواروں کا خلاصہ بیان کریں
+2. ہر امیدوار کی مناسبت کی وجہ بتائیں
+3. کسی بھی مہارت کی کمی کی نشاندہی کریں
+
+ایسی معلومات نہ بنائیں جو تفصیلات میں موجود نہیں ہیں۔"""
+
+
+def build_candidate_prompt_urdu(query: str, results: list[dict]) -> str:
+    context = "\n\n---\n\n".join(
+        f"ملازمت {i}: {r.get('metadata', {}).get('job_title', '')}\n{r.get('text', '')[:600]}"
+        for i, r in enumerate(results, 1)
+    )
+    return f"""آپ ایک کیریئر مشیر ہیں۔ براہ کرم اردو میں جواب دیں۔
+
+امیدوار کی تفصیلات:
+{query}
+
+حاصل شدہ ملازمتوں کی تفصیلات:
+{context}
+
+صرف اوپر دی گئی ملازمتوں کی بنیاد پر:
+1. سب سے مناسب 3 ملازمتوں کی سفارش کریں اور وجہ بتائیں
+2. امیدوار کی مہارتیں ہر کردار سے کتنی مطابقت رکھتی ہیں
+3. مہارت میں اضافے کی تجاویز
+
+ایسی معلومات نہ بنائیں جو ملازمتوں کی تفصیلات میں موجود نہیں ہیں۔"""
+
+
 def _groq_generate(prompt: str, max_tokens: int, temperature: float) -> str:
     """Generate text using Groq API (OpenAI-compatible)."""
     api_key = os.getenv("GROQ_API_KEY")
