@@ -1,5 +1,9 @@
 # RAG Talent Matching Project
 
+**Authors:** Abdullah Iqbal, Anushe Ali
+
+**Production URL:** [http://3.144.109.78](http://3.144.109.78/) (Deployed on Amazon EC2)
+
 A Retrieval-Augmented Generation (RAG) system for talent matching between resumes and job descriptions. It embeds pre-structured resume and job data into separate Pinecone vector indexes, and provides a Streamlit UI with hybrid BM25 + semantic search, RRF fusion, cross-encoder re-ranking, and LLM-generated answers.
 
 ## Dataset
@@ -97,7 +101,9 @@ docker compose build
 docker compose up -d
 ```
 
-App is available at: **http://localhost:8501**
+App is available at:
+- **Local:** http://localhost:8501
+- **Production:** http://3.144.109.78 (Amazon EC2)
 
 ### 3. Verify Data
 
@@ -208,4 +214,4 @@ reports/                    Generated evaluation reports
 | Retrieval | Hybrid BM25 + Semantic with RRF + CrossEncoder |
 | Evaluation | LLM-as-a-Judge (Faithfulness + Relevancy) |
 | UI | Streamlit |
-| Hosting | Docker / HuggingFace Spaces |
+| Hosting | Amazon EC2 with Docker Compose |
