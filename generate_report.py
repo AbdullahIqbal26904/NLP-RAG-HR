@@ -337,77 +337,93 @@ def build_report():
     cols_a = ["Strategy", "Faithfulness", "Relevancy", "Retrieval (s)", "Total (s)"]
     ws_a = [pw * 0.32, pw * 0.17, pw * 0.17, pw * 0.17, pw * 0.17]
     pdf.table_header(cols_a, ws_a)
-    for i, row in enumerate([
-        ("Semantic Only", "33.3%", "4.5%", "0.316", "5.096"),
-        ("Hybrid + RRF", "50.0%", "4.5%", "0.260", "4.854"),
-        ("Hybrid + RRF + CE", "16.7%", "35.9%", "0.977", "7.613"),
-    ]):
-        pdf.table_row(row, ws_a, fill=(i % 2 == 0))
+    if exp:
+        strat_labels = {
+            "semantic_only": "Semantic Only",
+            "hybrid_rrf": "Hybrid + RRF",
+            "hybrid_rrf_ce": "Hybrid + RRF + CE",
+        }
+        ablation_rows = []
+        for key in ["semantic_only", "hybrid_rrf", "hybrid_rrf_ce"]:
+            sm = exp["ablation"]["retrieval"]["summary_by_strategy"][key]
+            ablation_rows.append((
+                strat_labels[key],
+                f"{sm['avg_faithfulness']:.1%}",
+                f"{sm['avg_relevancy']:.1%}",
+                f"{sm['avg_retrieval_s']:.3f}",
+                f"{sm['avg_total_s']:.3f}",
+            ))
+        for i, row in enumerate(ablation_rows):
+            pdf.table_row(row, ws_a, fill=(i % 2 == 0))
     pdf.ln(1)
 
     pdf.sub_title("5.3", "Chunking Ablation")
     cols_c = ["Chunking", "Chunks", "Faithfulness", "Relevancy", "Total (s)"]
     ws_c = [pw * 0.28, pw * 0.14, pw * 0.19, pw * 0.19, pw * 0.20]
     pdf.table_header(cols_c, ws_c)
-    for i, row in enumerate([
-        ("Fixed (700c, 120 overlap)", "1045", "75.0%", "2.9%", "8.162"),
-        ("Recursive (700c)", "984", "25.0%", "22.0%", "8.903"),
-    ]):
-        pdf.table_row(row, ws_c, fill=(i % 2 == 0))
+    if exp:
+        chunk_labels = {
+            "fixed": "Fixed (700c, 120 overlap)",
+            "recursive": "Recursive (700c)",
+        }
+        chunk_rows = []
+        for method in ["fixed", "recursive"]:
+            cm = exp["ablation"]["chunking"]["summary_by_chunking"][method]
+            chunk_rows.append((
+                chunk_labels[method],
+                str(cm.get("chunk_count", "N/A")),
+                f"{cm['avg_faithfulness']:.1%}",
+                f"{cm['avg_relevancy']:.1%}",
+                f"{cm['avg_total_s']:.3f}",
+            ))
+        for i, row in enumerate(chunk_rows):
+            pdf.table_row(row, ws_c, fill=(i % 2 == 0))
     pdf.ln(1)
 
-    pdf.body_text(
-        "Selected pipeline: Hybrid + RRF + CE with full-document embeddings. Hybrid+RRF gave best "
-        "Faithfulness (50%), CrossEncoder added highest Relevancy (35.9%). Fixed chunking achieved 75% "
-        "Faithfulness but we use full-document embedding as resumes fit within the model's token limit."
-    )
+    if exp:
+        ra = exp["ablation"]["retrieval"]["summary_by_strategy"]
+        best_faith_key = max(ra, key=lambda k: ra[k]["avg_faithfulness"])
+        best_rel_key = max(ra, key=lambda k: ra[k]["avg_relevancy"])
+        best_faith_label = {"semantic_only": "Semantic Only", "hybrid_rrf": "Hybrid+RRF", "hybrid_rrf_ce": "Hybrid+RRF+CE"}
+        pdf.body_text(
+            f"Selected pipeline: Hybrid + RRF + CE with full-document embeddings. "
+            f"{best_faith_label[best_faith_key]} gave best Faithfulness ({ra[best_faith_key]['avg_faithfulness']:.1%}), "
+            f"{best_faith_label[best_rel_key]} added highest Relevancy ({ra[best_rel_key]['avg_relevancy']:.1%}). "
+            f"We use full-document embedding as resumes fit within the model's token limit."
+        )
+    else:
+        pdf.body_text(
+            "Selected pipeline: Hybrid + RRF + CE with full-document embeddings."
+        )
 
     # ── Section 6: Claim Verification Examples ──
     pdf.section_title("6", "Claim Verification Examples")
-    examples = [
-        {
-            "query": "React frontend developer with TypeScript",
-            "faith": "100%", "rel": "35.6%",
-            "claims": [
-                ("[SUPPORTED] Shakeel has 4 years experience as a React Native developer.",
-                 "Verified against Experience section of profile."),
-                ("[SUPPORTED] Shakeel has experience with React.js and TypeScript.",
-                 "Skills list and work experience confirm TypeScript annotations work."),
-            ],
-        },
-        {
-            "query": "DevOps engineer with Docker and Kubernetes",
-            "faith": "0%", "rel": "63.4%",
-            "claims": [
-                ("[NOT SUPPORTED] M. Zakaria has extensive Docker, Kubernetes, AWS experience.",
-                 "Context does not mention Docker, Kubernetes, or AWS for this candidate."),
-            ],
-        },
-        {
-            "query": "Python backend developer with FastAPI, 3+ years",
-            "faith": "0%", "rel": "36.8%",
-            "claims": [
-                ("[NOT SUPPORTED] He has listed Python as his primary skill.",
-                 "Multiple skills listed; Python not singled out as primary."),
-            ],
-        },
-    ]
-    for ex in examples:
-        pdf.set_font("Helvetica", "B", 9)
-        pdf.set_text_color(30, 30, 30)
-        pdf.cell(0, 5, f'Query: "{ex["query"]}"  |  Faith: {ex["faith"]}  |  Rel: {ex["rel"]}',
-                 new_x="LMARGIN", new_y="NEXT")
-        for claim, reason in ex["claims"]:
-            pdf.set_font("Helvetica", "", 8)
+    if exp:
+        example_rows = exp["baseline_fixed_set"].get("example_verifications", [])[:3]
+        for ex in example_rows:
+            query = ex.get("query", "")
+            faith = f"{ex.get('faithfulness', 0) * 100:.1f}%"
+            rel = f"{ex.get('relevancy', 0) * 100:.1f}%"
+            pdf.set_font("Helvetica", "B", 9)
             pdf.set_text_color(30, 30, 30)
-            pdf.set_x(pdf.l_margin + 4)
-            pdf.multi_cell(0, 4.5, f"- {claim}")
-            pdf.set_font("Helvetica", "I", 8)
-            pdf.set_text_color(80, 80, 80)
-            pdf.set_x(pdf.l_margin + 8)
-            pdf.multi_cell(0, 4.5, f"Reason: {reason}")
-            pdf.set_text_color(30, 30, 30)
-        pdf.ln(1)
+            pdf.cell(0, 5, f'Query: "{query}"  |  Faith: {faith}  |  Rel: {rel}',
+                     new_x="LMARGIN", new_y="NEXT")
+            for vc in ex.get("verified_claims", []):
+                status = "SUPPORTED" if vc.get("supported") else "NOT SUPPORTED"
+                claim_text = vc.get("claim", "")
+                reason = vc.get("reason", "")
+                pdf.set_font("Helvetica", "", 8)
+                pdf.set_text_color(30, 30, 30)
+                pdf.set_x(pdf.l_margin + 4)
+                pdf.multi_cell(0, 4.5, f"- [{status}] {claim_text}")
+                pdf.set_font("Helvetica", "I", 8)
+                pdf.set_text_color(80, 80, 80)
+                pdf.set_x(pdf.l_margin + 8)
+                pdf.multi_cell(0, 4.5, f"Reason: {reason}")
+                pdf.set_text_color(30, 30, 30)
+            pdf.ln(1)
+    else:
+        pdf.body_text("Run: python -m pipeline.experiments to generate claim verification examples.")
 
     # ── Section 7: Reproducibility & Deployment ──
     pdf.section_title("7", "Reproducibility and Deployment")
